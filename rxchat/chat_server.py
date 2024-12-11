@@ -53,7 +53,13 @@ class ChatServer:
             if username not in c.usernames:
                 continue
             c.usernames.remove(username)
-            await self.send_message(Message(conversation_id=cid, username="_system", content=f"User {username} disconnected."))
+            await self.send_message(
+                Message(
+                    conversation_id=cid,
+                    username="_system",
+                    content=f"User {username} disconnected.",
+                )
+            )
 
     async def user_join(self, username: str, conversation_id: str) -> None:
         if conversation_id not in self.conversations:
@@ -62,7 +68,9 @@ class ChatServer:
         if username in conversation.usernames:
             return
         conversation.usernames.append(username)
-        await self.send_message(Message(conversation_id, "_system", f"{username} joined the conversation."))
+        await self.send_message(
+            Message(conversation_id, "_system", f"{username} joined the conversation.")
+        )
 
     async def user_leave(self, username: str, conversation_id: str) -> None:
         if conversation_id not in self.conversations:
@@ -70,7 +78,9 @@ class ChatServer:
         conversation: Conversation = self.conversations[conversation_id]
         if username in conversation.usernames:
             return
-        await self.send_message(Message(conversation_id, "_system", f"{username} left the conversation."))
+        await self.send_message(
+            Message(conversation_id, "_system", f"{username} left the conversation.")
+        )
         conversation.usernames.remove(username)
 
     async def send_message(self, message: Message) -> None:
@@ -78,8 +88,10 @@ class ChatServer:
             raise RuntimeError(f"Conversation {message.conversation_id=} not found")
         conversation: Conversation = self.conversations[message.conversation_id]
         conversation.add_message(message)
-        tasks: list[asyncio.Task] = [asyncio.create_task(self.notify(username, message)) for username in
-                                     conversation.usernames]
+        tasks: list[asyncio.Task] = [
+            asyncio.create_task(self.notify(username, message))
+            for username in conversation.usernames
+        ]
         await asyncio.gather(*tasks)
 
     async def notify(self, username: str, message: Message) -> None:

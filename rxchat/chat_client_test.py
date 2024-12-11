@@ -26,10 +26,12 @@ async def test_connect_success(client: ChatClient):
 @pytest.mark.asyncio
 async def test_receive_message(client: ChatClient):
     mock_ws = AsyncMock()
-    client.ws.receive_json = AsyncMock(side_effect=[
-        {"conversation_id": "conv1", "username": "test", "content": "Hello"},
-        {"conversation_id": "conv2", "username": "test", "content": "World"},
-    ])
+    client.ws.receive_json = AsyncMock(
+        side_effect=[
+            {"conversation_id": "conv1", "username": "test", "content": "Hello"},
+            {"conversation_id": "conv2", "username": "test", "content": "World"},
+        ]
+    )
 
     received = []
     try:
@@ -43,11 +45,7 @@ async def test_receive_message(client: ChatClient):
 @pytest.mark.asyncio
 async def test_send_message(client: ChatClient):
     await client.connect(username="testuser")
-    message = Message(
-        conversation_id="x",
-        username="test",
-        content="y"
-    )
+    message = Message(conversation_id="x", username="test", content="y")
 
     # Directly sending the constructed message
     await client.send(message)

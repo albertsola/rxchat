@@ -1,4 +1,5 @@
 """Welcome to Reflex! This file outlines the steps to create a basic app."""
+
 import reflex as rx
 
 from rxconfig import config
@@ -6,8 +7,10 @@ from rxchat.chat_client import ChatClient
 from rxchat.chat_events import Message
 from rxchat.api import router
 
+
 class State(rx.State):
     """The app state."""
+
     _chat: ChatClient | None = None
     connected: bool = False
 
@@ -42,9 +45,6 @@ class State(rx.State):
     async def message(self, conversation_id: str, content: str):
         assert self._chat is not None
         await self._chat.message(conversation_id, content)
-
-
-
 
 
 def index() -> rx.Component:
