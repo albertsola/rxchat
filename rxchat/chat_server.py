@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import WebSocket, routing
+from fastapi import WebSocket
 from rxchat.chat_events import Message, Conversation, ServerMessage, ClientMessage
 from typing import AsyncGenerator
 
@@ -56,7 +56,7 @@ class ChatServer:
             await self.send_message(Message(conversation_id=cid, username="_system", content=f"User {username} disconnected."))
 
     async def user_join(self, username: str, conversation_id: str) -> None:
-        if not conversation_id in self.conversations:
+        if conversation_id not in self.conversations:
             self.conversations[conversation_id] = Conversation()
         conversation: Conversation = self.conversations[conversation_id]
         if username in conversation.usernames:
@@ -65,7 +65,7 @@ class ChatServer:
         await self.send_message(Message(conversation_id, "_system", f"{username} joined the conversation."))
 
     async def user_leave(self, username: str, conversation_id: str) -> None:
-        if not conversation_id in self.conversations:
+        if conversation_id not in self.conversations:
             return
         conversation: Conversation = self.conversations[conversation_id]
         if username in conversation.usernames:

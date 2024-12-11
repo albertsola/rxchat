@@ -4,7 +4,7 @@ import reflex as rx
 from rxconfig import config
 from rxchat.chat_client import ChatClient
 from rxchat.chat_events import Message
-
+from rxchat.api import router
 
 class State(rx.State):
     """The app state."""
@@ -73,3 +73,4 @@ def index() -> rx.Component:
 
 app = rx.App()
 app.add_page(index)
+app.api.include_router(router)
