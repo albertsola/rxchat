@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "rxchat"
+version = "0.1.0"
+description = "Chat for reflex.dev"
+authors = ["Albert Sola <albert.sola@gmail.com>"]
+license = "GPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+reflex = ">=0.6.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+mypy = "*"
+black = "*"
+tox = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
