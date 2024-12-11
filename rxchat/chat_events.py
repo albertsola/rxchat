@@ -1,5 +1,5 @@
-from typing import Literal, Annotated, Union
-from pydantic import Field
+from typing import Literal, Union
+
 import reflex as rx
 
 from datetime import datetime
@@ -17,15 +17,15 @@ class LeaveConversation(rx.Model):
 
 class Message(rx.Model):
     event: Literal["conversation.message"] = "conversation.message"
-    datetime: datetime = datetime.now()
+    timestamp: datetime = datetime.now()
     conversation_id: str | None = None
     username: str
-    message: str
+    content: str
 
 
 class Conversation(rx.Model):
     usernames: list[str]
-    messages: [Message] = []
+    messages: list[Message] = []
 
     def add_message(self, message: Message):
         if message.username not in self.usernames:
@@ -36,9 +36,6 @@ class Conversation(rx.Model):
         self.usernames.remove(username)
 
 
-ClientMessage: Annotated[
-    Union[JoinConversation, LeaveConversation, Message],
-    Field(discriminator="event")
-]
+ClientMessage = Union[JoinConversation, LeaveConversation, Message]
 
-ServerMessage: Message
+ServerMessage = Message
