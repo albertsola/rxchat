@@ -7,10 +7,13 @@ class ChatClient:
     def __init__(self, base_url: str):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
+        self.ws = None
+        self.username = None
 
     async def connect(self, username: str):
         try:
             self.ws = await self._session.ws_connect("/chat", params={"username": username})
+            self.username = username
         except WSServerHandshakeError as e:
             await self._session.close()
             raise e
@@ -18,7 +21,7 @@ class ChatClient:
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
         while True:
             data: dict = await self.ws.receive_json()
-            yield Message(*data)
+            yield Message(**data)
 
     async def send(self, message: ClientMessage):
         await self.ws.send_str(message.json())
@@ -30,4 +33,4 @@ class ChatClient:
         await self.send(LeaveConversation(conversation_id=conversation_id))
 
     async def message(self, conversation_id:str, content: str):
-        await self.send(Message(conversation_id=conversation_id, content=content))
+        await self.send(Message(conversation_id=conversation_id, username=self.username, content=content))
