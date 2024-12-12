@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import WebSocket
-from rxchat.chat_events import Message, Conversation, ServerMessage, ClientMessage
+from rxchat.chat_events import Message, Conversation, JoinConversation, ServerMessage, ClientMessage
 from typing import AsyncGenerator
 
 
@@ -35,6 +35,8 @@ class WebSocketClientHandler:
                 match (data.get("event", None)):
                     case "conversation.message":
                         yield Message(**data)
+                    case "conversation.join":
+                        yield JoinConversation(**data)
                     case _:
                         raise RuntimeError(
                             f"Server received unknown message. payload={data}"
