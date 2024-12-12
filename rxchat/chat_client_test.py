@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 from unittest.mock import AsyncMock
 from .chat_events import Message

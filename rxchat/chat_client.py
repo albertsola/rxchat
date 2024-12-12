@@ -1,5 +1,5 @@
-from typing import AsyncGenerator
-from aiohttp import ClientSession, WSServerHandshakeError
+from typing import AsyncGenerator, Optional
+from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse
 from rxchat.chat_events import (
     ClientMessage,
     ServerMessage,
@@ -13,8 +13,8 @@ class ChatClient:
     def __init__(self, base_url: str):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
-        self.ws = None
-        self.username = None
+        self.ws: Optional[ClientWebSocketResponse]= None
+        self.username: Optional[str] = None
 
     async def connect(self, username: str):
         try:
@@ -28,10 +28,12 @@ class ChatClient:
 
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
         while True:
+            assert self.ws is not None
             data: dict = await self.ws.receive_json()
             yield Message(**data)
 
     async def send(self, message: ClientMessage):
+        assert self.ws is not None
         await self.ws.send_str(message.json())
 
     async def join_conversation(self, conversation_id: str):
