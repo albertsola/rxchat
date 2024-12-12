@@ -1,6 +1,6 @@
 from typing import AsyncGenerator, Optional
 from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse
-from rxchat.events import (
+from rxchat.server import (
     ClientMessage,
     ServerMessage,
     Message,
@@ -33,6 +33,9 @@ class ChatClient:
             ), "ChatClient.ws can't be None when calling receive()"
             data: dict = await self.ws.receive_json()
             yield Message(**data)
+
+    async def send_message(self, conversation_id: str, content: str):
+        await self.send(Message(conversation_id=conversation_id, content=content, username=self.username))
 
     async def send(self, message: ClientMessage):
         assert self.ws is not None, "ChatClient.ws can't be None when calling send()"

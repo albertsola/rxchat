@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import WebSocket
-from rxchat.events import Message, Conversation, JoinConversation, ServerMessage, ClientMessage
+from rxchat.server.events import Message, Conversation, JoinConversation, ServerMessage, ClientMessage
 from typing import AsyncGenerator
 
 

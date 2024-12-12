@@ -1,6 +1,6 @@
 import reflex as rx
-from rxchat.events import Message
-from rxchat.rxchat import State
+from rxchat.server.events import Message
+from .state import ChatState
 
 
 def render_own_message(message: Message) -> rx.Component:
@@ -22,9 +22,9 @@ def render_other_message(message: Message) -> rx.Component:
     )
 
 
-def message_render(message: Message)->rx.Component:
+def message_render(message: Message) -> rx.Component:
     return rx.cond(
-        State.username == message.username,
+        ChatState.username == message.username,
         render_own_message(message),
         render_other_message(message)
     )
@@ -32,19 +32,19 @@ def message_render(message: Message)->rx.Component:
 
 def messages() -> rx.Component:
     return rx.vstack(
-        rx.foreach(State.messages, message_render),
+        rx.foreach(ChatState.messages, message_render),
         width="100%",
     )
 
 
 def navbar() -> rx.Component:
     return rx.hstack(
-        rx.input(type="text", on_change=State.set_username, value=State.username),
+        rx.input(type="text", on_change=ChatState.set_username, value=ChatState.username),
         rx.cond(
 
-            State.connected,
+            ChatState.connected,
             rx.badge("Connected"),
-            rx.hstack(rx.badge("Disconnected"), rx.button("Connect", on_click=State.connect))
+            rx.hstack(rx.badge("Disconnected"), rx.button("Connect", on_click=ChatState.connect))
         ),
         width="100%",
     )
@@ -52,9 +52,9 @@ def navbar() -> rx.Component:
 
 def write_message() -> rx.Component:
     return rx.hstack(
-        rx.select(["welcome", "queries"], on_change=State.set_conversation_id, value=State.conversation_id),
-        rx.input(name="content", on_change=State.set_content, value=State.content),
-        rx.button("Send", disabled=~State.connected, on_click=State.send_message),
+        rx.select(["welcome", "queries"], on_change=ChatState.set_conversation_id, value=ChatState.conversation_id),
+        rx.input(name="content", on_change=ChatState.set_content, value=ChatState.content),
+        rx.button("Send", disabled=~ChatState.connected, on_click=ChatState.send_message),
         width="100%",
     )
 
