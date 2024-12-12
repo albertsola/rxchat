@@ -1,4 +1,4 @@
-import pytest, asyncio
+import pytest
 from unittest.mock import MagicMock, AsyncMock
 from rxchat.chat_server import ChatServer, WebSocketClientHandler, Conversation, Message
 
