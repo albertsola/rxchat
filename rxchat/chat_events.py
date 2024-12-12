@@ -24,7 +24,7 @@ class Message(rx.Model):
 
 
 class Conversation(rx.Model):
-    usernames: list[str]
+    usernames: list[str] = []
     messages: list[Message] = []
 
     def add_message(self, message: Message):

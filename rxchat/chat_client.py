@@ -13,7 +13,7 @@ class ChatClient:
     def __init__(self, base_url: str):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
-        self.ws: Optional[ClientWebSocketResponse]= None
+        self.ws: Optional[ClientWebSocketResponse] = None
         self.username: Optional[str] = None
 
     async def connect(self, username: str):
@@ -28,7 +28,9 @@ class ChatClient:
 
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
         while True:
-            assert self.ws is not None, "ChatClient.ws can't be None when calling receive()"
+            assert (
+                self.ws is not None
+            ), "ChatClient.ws can't be None when calling receive()"
             data: dict = await self.ws.receive_json()
             yield Message(**data)
 

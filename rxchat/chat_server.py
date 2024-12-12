@@ -25,17 +25,22 @@ class WebSocketClientHandler:
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
-        except asyncio.CancelledError:
+        except (asyncio.CancelledError, StopAsyncIteration):
             await self.ws.close()
 
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
-        while True:
-            data = await self.ws.receive_json()
-            match(data.get("event", None)):
-                case "conversation.message":
-                    yield Message(**data)
-                case _:
-                    raise RuntimeError(f"Server received unknown message. payload={data}")
+        try:
+            while True:
+                data = await self.ws.receive_json()
+                match (data.get("event", None)):
+                    case "conversation.message":
+                        yield Message(**data)
+                    case _:
+                        raise RuntimeError(
+                            f"Server received unknown message. payload={data}"
+                        )
+        except StopAsyncIteration:
+            pass
 
     async def send(self, message: ClientMessage) -> None:
         await self.ws.send_text(message.json())
@@ -73,17 +78,26 @@ class ChatServer:
             return
         conversation.usernames.append(username)
         await self.send_message(
-            Message(conversation_id, "_system", f"{username} joined the conversation.")
+            Message(
+                conversation_id=conversation_id,
+                username="_system",
+                content=f"{username} joined the conversation.",
+            )
         )
 
     async def user_leave(self, username: str, conversation_id: str) -> None:
         if conversation_id not in self.conversations:
+            # raise RuntimeError("Username is not in the conversation")
             return
         conversation: Conversation = self.conversations[conversation_id]
-        if username in conversation.usernames:
+        if username not in conversation.usernames:
             return
         await self.send_message(
-            Message(conversation_id, "_system", f"{username} left the conversation.")
+            Message(
+                conversation_id=conversation_id,
+                username="_system",
+                content=f"{username} left the conversation.",
+            )
         )
         conversation.usernames.remove(username)
 
