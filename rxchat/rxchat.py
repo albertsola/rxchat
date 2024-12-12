@@ -57,7 +57,6 @@ class State(rx.State):
         self.content = ""
         return ret
 
-
     @rx.event
     async def message(self, conversation_id: str, content: str):
         assert self._chat is not None
