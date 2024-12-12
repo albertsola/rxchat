@@ -1,5 +1,5 @@
 from fastapi import WebSocket, APIRouter
-from rxchat.chat_server import ChatServer
+from rxchat.server.chat_server import ChatServer
 import uuid
 
 chat_server = ChatServer()

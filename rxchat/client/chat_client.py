@@ -1,6 +1,6 @@
 from typing import AsyncGenerator, Optional
 from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse
-from rxchat.chat_events import (
+from rxchat.events import (
     ClientMessage,
     ServerMessage,
     Message,

@@ -1,6 +1,6 @@
 import reflex as rx
-from .chat_events import Message
-from .rxchat import State
+from rxchat.events import Message
+from rxchat.rxchat import State
 
 
 def render_own_message(message: Message) -> rx.Component:

@@ -38,4 +38,4 @@ class Conversation(rx.Model):
 
 ClientMessage = Union[JoinConversation, LeaveConversation, Message]
 
-ServerMessage = Message
+ServerMessage = Union[Message]
