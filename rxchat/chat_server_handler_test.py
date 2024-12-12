@@ -69,7 +69,7 @@ async def test_handler_unknown_message():
     # Actually, your code raises RuntimeError, so let's confirm that.
     with pytest.raises(RuntimeError) as exc_info:
         await handler(chat_state)
-    assert "Unknown message type unknown.event" in str(exc_info.value)
+    assert "Server received unknown message" in str(exc_info.value)
 
     # The ws is not necessarily closed here because the RuntimeError breaks out
     # But the test ensures the code raises the right exception.

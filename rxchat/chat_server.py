@@ -31,7 +31,11 @@ class WebSocketClientHandler:
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
         while True:
             data = await self.ws.receive_json()
-            yield Message(**data)
+            match(data.get("event", None)):
+                case "conversation.message":
+                    yield Message(**data)
+                case _:
+                    raise RuntimeError(f"Server received unknown message. payload={data}")
 
     async def send(self, message: ClientMessage) -> None:
         await self.ws.send_text(message.json())
