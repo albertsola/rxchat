@@ -17,6 +17,7 @@ pytest-asyncio = "*"
 mypy = "*"
 black = "*"
 tox = "*"
+flake8 = "*"
 
 
 [build-system]
