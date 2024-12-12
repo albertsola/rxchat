@@ -3,12 +3,30 @@ from .chat_events import Message
 from .rxchat import State
 
 
-def message_render(message: Message) -> rx.Component:
+def render_own_message(message: Message) -> rx.Component:
+    return rx.hstack(
+        rx.card(
+            message.content,
+            margin_left="auto"
+        ),
+        width="100%",
+    )
+
+
+def render_other_message(message: Message) -> rx.Component:
     return rx.hstack(
         rx.badge(message.username),
         rx.card(
             message.content,
         )
+    )
+
+
+def message_render(message: Message)->rx.Component:
+    return rx.cond(
+        State.username == message.username,
+        render_own_message(message),
+        render_other_message(message)
     )
 
 
