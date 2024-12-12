@@ -1,11 +1,8 @@
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
-from unittest import mock
-from aiohttp import WSServerHandshakeError
-from .chat_events import Message, JoinConversation, LeaveConversation
+from unittest.mock import AsyncMock
+from .chat_events import Message
 
-from .chat_client import ChatClient  # adjust the import to match your project structure
+from .chat_client import ChatClient
 
 
 @pytest.fixture
@@ -25,7 +22,6 @@ async def test_connect_success(client: ChatClient):
 
 @pytest.mark.asyncio
 async def test_receive_message(client: ChatClient):
-    mock_ws = AsyncMock()
     client.ws.receive_json = AsyncMock(
         side_effect=[
             {"conversation_id": "conv1", "username": "test", "content": "Hello"},
