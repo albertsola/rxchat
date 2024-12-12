@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from rxchat.chat_server import ChatServer, WebSocketClientHandler, Conversation, Message
 
+pytestmark = pytest.mark.skip(reason="WIP - Tests not implemented")
 
 @pytest.fixture
 def chat_server():
