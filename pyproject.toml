@@ -18,7 +18,7 @@ mypy = "*"
 black = "*"
 tox = "*"
 flake8 = "*"
-
+coverage = "*"
 
 [build-system]
 requires = ["poetry-core"]
@@ -36,3 +36,8 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.coverage.run]
+omit = [
+    "*_test.py",
+    ]
