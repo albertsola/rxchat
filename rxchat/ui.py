@@ -4,7 +4,12 @@ from .rxchat import State
 
 
 def message_render(message: Message) -> rx.Component:
-    return rx.hstack(message.username, message.content)
+    return rx.hstack(
+        rx.badge(message.username),
+        rx.card(
+            message.content,
+        )
+    )
 
 
 def messages() -> rx.Component:
