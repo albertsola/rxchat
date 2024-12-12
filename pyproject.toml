@@ -38,6 +38,5 @@ exclude = '''
 '''
 
 [tool.coverage.run]
-omit = [
-    "*_test.py",
-    ]
+omit = [ "*_test.py" ]
+command_line = "-m pytest rxchat"
