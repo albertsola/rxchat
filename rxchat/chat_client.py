@@ -28,12 +28,12 @@ class ChatClient:
 
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
         while True:
-            assert self.ws is not None
+            assert self.ws is not None, "ChatClient.ws can't be None when calling receive()"
             data: dict = await self.ws.receive_json()
             yield Message(**data)
 
     async def send(self, message: ClientMessage):
-        assert self.ws is not None
+        assert self.ws is not None, "ChatClient.ws can't be None when calling send()"
         await self.ws.send_str(message.json())
 
     async def join_conversation(self, conversation_id: str):
