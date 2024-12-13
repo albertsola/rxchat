@@ -90,7 +90,7 @@ async def test_user_join(chat_server):
         Message(
             conversation_id=conversation_id,
             username="_system",
-            content=f"{username} joined the conversation.",
+            content=f"{username} joined the {conversation_id} conversation.",
         )
     )
 

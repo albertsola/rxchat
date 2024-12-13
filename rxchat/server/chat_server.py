@@ -1,7 +1,8 @@
 import asyncio
 from fastapi import WebSocket
-from rxchat.server.events import Message, Conversation, JoinConversation, ServerMessage, ClientMessage
+from rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
 from typing import AsyncGenerator
+from starlette.websockets import WebSocketDisconnect
 
 
 class WebSocketClientHandler:
@@ -37,10 +38,14 @@ class WebSocketClientHandler:
                         yield Message(**data)
                     case "conversation.join":
                         yield JoinConversation(**data)
+                    case "conversation.leave":
+                        yield LeaveConversation(**data)
                     case _:
                         raise RuntimeError(
                             f"Server received unknown message. payload={data}"
                         )
+        except WebSocketDisconnect as ex:
+            print(f"WebSocketDisconnect: {ex}")
         except StopAsyncIteration:
             pass
 
@@ -83,7 +88,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} joined the conversation.",
+                content=f"{username} joined the {conversation_id} conversation.",
             )
         )
 
@@ -98,7 +103,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} left the conversation.",
+                content=f"{username} left the {conversation_id} conversation.",
             )
         )
         conversation.usernames.remove(username)

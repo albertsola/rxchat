@@ -1,5 +1,5 @@
 from typing import AsyncGenerator, Optional
-from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse
+from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse, WSMessageTypeError
 from rxchat.server import (
     ClientMessage,
     ServerMessage,
@@ -31,7 +31,10 @@ class ChatClient:
             assert (
                 self.ws is not None
             ), "ChatClient.ws can't be None when calling receive()"
-            data: dict = await self.ws.receive_json()
+            try:
+                data: dict = await self.ws.receive_json()
+            except WSMessageTypeError:
+                return
             yield Message(**data)
 
     async def send_message(self, conversation_id: str, content: str):
@@ -53,3 +56,6 @@ class ChatClient:
                 conversation_id=conversation_id, username=self.username, content=content
             )
         )
+
+    async def disconnect(self):
+        await self._session.close()
