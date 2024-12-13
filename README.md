@@ -3,6 +3,8 @@
 
 Reflex Chat (rxchat) is a versatile and efficient chat interface designed to seamlessly integrate into Reflex projects. Built with the Reflex framework for the frontend and FastAPI for the backend, rxchat offers developers a ready-to-use chat solution that combines simplicity, flexibility, and performance.
 
+![RxChat preview](preview.png "RxChat preview")
+
 ## Features
 
 - **Frontend Integration**: Easily integrates with Reflex-based projects for a smooth UI experience.
