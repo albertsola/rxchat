@@ -35,6 +35,9 @@ class Conversation(rx.Model):
     def remove_user(self, username: str):
         self.usernames.remove(username)
 
+    def user_count(self) -> int:
+        return len([username for username in self.usernames if username != "_system"])
+
 
 ClientMessage = Union[JoinConversation, LeaveConversation, Message]
 

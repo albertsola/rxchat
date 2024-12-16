@@ -88,7 +88,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} joined the {conversation_id} conversation.",
+                content=f"{username} joined the {conversation_id} conversation. No of people {conversation.user_count()}",
             )
         )
 
@@ -103,7 +103,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} left the {conversation_id} conversation.",
+                content=f"{username} left the {conversation_id} conversation. No of people {conversation.user_count()}",
             )
         )
         conversation.usernames.remove(username)
