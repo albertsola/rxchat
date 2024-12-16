@@ -20,6 +20,7 @@ async def test_handler_accepts_websocket_and_closes_on_cancel():
     # Run the handler and ensure it handles cancellation
     await handler(chat_state)
 
+    ws.receive_json.assert_awaited_once()
     ws.accept.assert_awaited_once()
     ws.close.assert_awaited_once()
 

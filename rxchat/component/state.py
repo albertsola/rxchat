@@ -43,6 +43,7 @@ class ChatState(rx.State):
             async with self:
                 self._chat = None
                 self.connected = False
+                self.messages = []
 
     @rx.event
     async def change_conversation(self, conversation_id: str):

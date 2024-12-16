@@ -1,7 +1,7 @@
 from fastapi import WebSocket, APIRouter
 from rxchat.server.chat_server import ChatServer
 import uuid
-
+from .events import Conversation
 chat_server = ChatServer()
 router = APIRouter()
 
@@ -13,3 +13,8 @@ async def connect_chat(websocket: WebSocket):
         await chat_server.handle_user_websocket(username, websocket)
     finally:
         await chat_server.handle_user_disconnected(username)
+
+
+@router.get("/chat/{conversation_id}")
+async def get_conversation_id(conversation_id: str) -> Conversation:
+    return chat_server.conversations[conversation_id].tail(10)

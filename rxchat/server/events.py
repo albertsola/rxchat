@@ -38,6 +38,12 @@ class Conversation(rx.Model):
     def user_count(self) -> int:
         return len([username for username in self.usernames if username != "_system"])
 
+    def tail(self, num_messages: int) -> "Conversation":
+        return Conversation(
+            usernames=self.usernames,
+            messages=self.messages[:num_messages]
+        )
+
 
 ClientMessage = Union[JoinConversation, LeaveConversation, Message]
 
