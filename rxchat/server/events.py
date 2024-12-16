@@ -32,7 +32,7 @@ class Conversation(rx.Model):
             self.usernames.append(message.username)
         self.messages.append(message)
 
-    def remove(self, username: str):
+    def remove_user(self, username: str):
         self.usernames.remove(username)
 
 
