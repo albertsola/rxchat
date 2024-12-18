@@ -3,4 +3,6 @@ assets/external/
 __pycache__/
 *.db
 .web
+.coverage
+.tox
 htmlcov/
