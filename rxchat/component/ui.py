@@ -72,7 +72,7 @@ def navbar() -> rx.Component:
             value=ChatState.conversation_id,
             read_only=~ChatState.connected
         ),
-        rx.badge(ChatState.conversation_user_count, variant="soft", high_contrast=True),
+        rx.badge(f"Users: {ChatState.conversation_user_count}", variant="soft", high_contrast=True),
         rx.cond(
             ChatState.connected,
             rx.hstack(rx.badge("Connected"), rx.button("Disconnect", on_click=ChatState.disconnect)),
