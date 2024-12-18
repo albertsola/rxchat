@@ -1,6 +1,7 @@
 from fastapi import WebSocket, APIRouter
 from rxchat.server.chat_server import ChatServer
-from typing import List
+from rxchat.server.chat_channel import ChatChannel, get_channel_ids
+from typing import Dict, List
 import uuid
 from .events import Conversation
 chat_server = ChatServer()
@@ -19,6 +20,19 @@ async def connect_chat(websocket: WebSocket):
 async def get_conversation_id(conversation_id: str) -> Conversation:
     return chat_server.conversations[conversation_id].tail(10)
 
-@router.get("/channels", response_model=List[str])
+@router.get("/channels", response_model=List[ChatChannel])
 async def get_channels():
-    return ["Welcome", "Jokes", "Tech"]
+    response = []
+    for channel_id in get_channel_ids():
+        channel_conversation = chat_server.get_conversation(channel_id)
+        if not channel_conversation:
+            channel_users_count = 0
+        else:
+            channel_users_count = channel_conversation.user_count()
+
+        response.append({
+            "id": channel_id,
+            "users_count": channel_users_count
+        })
+    return response
+

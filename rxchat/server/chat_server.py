@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import WebSocket
 from rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from starlette.websockets import WebSocketDisconnect
 
 
@@ -88,7 +88,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} joined the {conversation_id} conversation. No of people {conversation.user_count()}",
+                content=f"{username} joined the {conversation_id} conversation.",
             )
         )
 
@@ -103,7 +103,7 @@ class ChatServer:
             Message(
                 conversation_id=conversation_id,
                 username="_system",
-                content=f"{username} left the {conversation_id} conversation. No of people {conversation.user_count()}",
+                content=f"{username} left the {conversation_id} conversation.",
             )
         )
         conversation.usernames.remove(username)
@@ -123,3 +123,8 @@ class ChatServer:
         if username not in self.users:
             return
         await self.users[username].send(message)
+
+    def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
+        if conversation_id not in self.conversations:
+            return None
+        return self.conversations[conversation_id]
