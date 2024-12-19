@@ -3,15 +3,14 @@ import aiohttp
 
 from rxchat.client import ChatClient
 from rxchat.server import Message
-from rxchat.server.chat_channel import ChatChannel
 
 class ChatState(rx.State):
     """The app state."""
 
     _chat: ChatClient | None = None
     connected: bool = False
-    channels_data: dict[str, ChatChannel] = {}
-    channels: list[str] = ["Welcome"]
+    conversations_data: dict[str, dict] = {}
+    conversations: list[str] = ["Welcome"]
 
     messages: list[Message] = []
     conversation_id: str = "Welcome"
@@ -61,7 +60,7 @@ class ChatState(rx.State):
     async def join_conversation(self, conversation_id: str):
         assert self._chat is not None
         await self._chat.join_conversation(conversation_id)
-        await self.update_channel(self.conversation_id)
+        await self.update_conversations(self.conversation_id)
 
     @rx.event
     async def leave_conversation(self, conversation_id: str):
@@ -84,9 +83,9 @@ class ChatState(rx.State):
         await self._chat.disconnect()
 
     @staticmethod
-    async def fetch_channels():
-        """Fetch the list of channels from the backend."""
-        url = f"http://localhost:8000/channels"
+    async def fetch_conversations():
+        """Fetch the list of conversations from the backend."""
+        url = f"http://localhost:8000/conversations"
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -95,21 +94,21 @@ class ChatState(rx.State):
                         data = await response.json()
                         return data
                     else:
-                        print(f"Failed to fetch channels. Status code: {response.status}")
+                        print(f"Failed to fetch conversations. Status code: {response.status}")
                         return []
         except Exception as e:
-            print(f"Error fetching channels: {e}")
+            print(f"Error fetching conversations: {e}")
             return []
     
     @rx.event
-    async def load_channels(self):
-        """Load the channels into the state."""
-        channels = await self.fetch_channels()
+    async def load_conversations(self):
+        """Load the conversations into the state."""
+        conversations = await self.fetch_conversations()
         
-        if channels:
-            self.channels_data = {channel['id']: channel for channel in channels}
-            self.channels = [f"{channel['id']}" for channel in channels]
+        if conversations:
+            self.conversations_data = {conversation['id']: conversation for conversation in conversations}
+            self.conversations = [f"{conversation['id']}" for conversation in conversations]
 
-    async def update_channel(self, conversation_id):
-        await self.load_channels()
-        self.conversation_user_count = self.channels_data[conversation_id]["users_count"]
+    async def update_conversations(self, conversation_id):
+        await self.load_conversations()
+        self.conversation_user_count = self.conversations_data[conversation_id]["users_count"]

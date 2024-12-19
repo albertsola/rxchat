@@ -124,6 +124,9 @@ class ChatServer:
             return
         await self.users[username].send(message)
 
+    def get_coverstations(self) -> dict[str, Conversation]:
+        return self.conversations
+
     def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
         if conversation_id not in self.conversations:
             return None
