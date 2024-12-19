@@ -2,8 +2,8 @@ import pytest
 import asyncio
 from unittest.mock import AsyncMock
 
-from rxchat.server.chat_server import WebSocketClientHandler
-from rxchat.server.events import Message
+from reflex_rxchat.server.chat_server import WebSocketClientHandler
+from reflex_rxchat.server.events import Message
 
 
 @pytest.mark.asyncio
