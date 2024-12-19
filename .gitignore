@@ -1,9 +1,7 @@
-assets/external/
+custom_components/reflex_rxchat.egg-info
 *.py[cod]
 __pycache__/
-*.db
-.web
 .coverage
 .tox
 htmlcov/
-custom_components/reflex_rxchat.egg-info
+
