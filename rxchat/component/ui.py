@@ -67,13 +67,13 @@ def navbar() -> rx.Component:
     return rx.hstack(
         rx.input(type="text", on_change=ChatState.set_username, value=ChatState.username, read_only=ChatState.connected, placeholder="Your username"),
         rx.select(
-            ChatState.channels,
+            ChatState.conversations,
             on_change=ChatState.change_conversation,
             value=ChatState.conversation_id,
             read_only=~ChatState.connected
         ),
+        rx.badge(f"Users: {ChatState.conversation_user_count}", variant="soft", high_contrast=True),
         rx.cond(
-
             ChatState.connected,
             rx.hstack(rx.badge("Connected"), rx.button("Disconnect", on_click=ChatState.disconnect)),
             rx.hstack(rx.badge("Disconnected"), rx.button("Connect", on_click=ChatState.connect))
@@ -81,6 +81,7 @@ def navbar() -> rx.Component:
         justify_content="space-between",
         align_items="center",
         width="100%",
+        on_mount=ChatState.load_conversations,
     )
 
 

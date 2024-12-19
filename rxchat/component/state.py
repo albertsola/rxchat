@@ -1,36 +1,40 @@
 import reflex as rx
+import aiohttp
 
 from rxchat.client import ChatClient
 from rxchat.server import Message
-
 
 class ChatState(rx.State):
     """The app state."""
 
     _chat: ChatClient | None = None
     connected: bool = False
-    channels: list[str] = ["Welcome", "Jokes", "Tech"]
+    conversations_data: dict[str, dict] = {}
+    conversations: list[str] = ["Welcome"]
 
     messages: list[Message] = []
     conversation_id: str = "Welcome"
+    conversation_user_count: int = 0
     content: str = ""
     username: str = ""
     processing: bool = False
 
+    def backend_url(self) -> str:
+        frontend_scheme: str = self.router.page.host.split(":")[0]
+        backend_hostname: str = self.router.headers.host
+        return f"{frontend_scheme}://{backend_hostname}/"
+        
     @rx.event(background=True)
     async def connect(self):
         try:
             async with self:
                 if self.username.__len__() < 5:
                     return rx.toast.error("Your username has to be at least 5 characters long")
-            frontend_scheme: str = self.router.page.host.split(":")[0]
-            backend_hostname: str = self.router.headers.host
-            base_url: str = f"{frontend_scheme}://{backend_hostname}/"
-            print(f"{base_url=}")
+            backend_url = self.backend_url()
             async with self:
-                self._chat = ChatClient(base_url=base_url)
+                self._chat = ChatClient(base_url=backend_url)
                 await self._chat.connect(self.username)
-                await self._chat.join_conversation(self.conversation_id)
+                await self.join_conversation(self.conversation_id)
                 self.connected = True
             async for m in self._chat.receive():
                 async with self:
@@ -43,18 +47,20 @@ class ChatState(rx.State):
             async with self:
                 self._chat = None
                 self.connected = False
+                self.messages = []
 
     @rx.event
     async def change_conversation(self, conversation_id: str):
         assert self._chat is not None, "ChatState._chat needs to be initialized to change_conversation"
-        await self._chat.leave_conversation(self.conversation_id)
+        await self.leave_conversation(self.conversation_id)
         self.conversation_id = conversation_id
-        await self._chat.join_conversation(self.conversation_id)
+        await self.join_conversation(self.conversation_id)
 
     @rx.event
     async def join_conversation(self, conversation_id: str):
         assert self._chat is not None
         await self._chat.join_conversation(conversation_id)
+        await self.update_conversations(self.conversation_id)
 
     @rx.event
     async def leave_conversation(self, conversation_id: str):
@@ -75,3 +81,34 @@ class ChatState(rx.State):
     @rx.event
     async def disconnect(self):
         await self._chat.disconnect()
+
+    @staticmethod
+    async def fetch_conversations():
+        """Fetch the list of conversations from the backend."""
+        url = f"http://localhost:8000/conversations"
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return data
+                    else:
+                        print(f"Failed to fetch conversations. Status code: {response.status}")
+                        return []
+        except Exception as e:
+            print(f"Error fetching conversations: {e}")
+            return []
+    
+    @rx.event
+    async def load_conversations(self):
+        """Load the conversations into the state."""
+        conversations = await self.fetch_conversations()
+        
+        if conversations:
+            self.conversations_data = {conversation['id']: conversation for conversation in conversations}
+            self.conversations = [f"{conversation['id']}" for conversation in conversations]
+
+    async def update_conversations(self, conversation_id):
+        await self.load_conversations()
+        self.conversation_user_count = self.conversations_data[conversation_id]["users_count"]

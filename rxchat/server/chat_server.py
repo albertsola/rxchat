@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import WebSocket
 from rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from starlette.websockets import WebSocketDisconnect
 
 
@@ -53,9 +53,15 @@ class WebSocketClientHandler:
         await self.ws.send_text(message.json())
 
 
+default_conversations: dict[str, Conversation] = {
+    "Welcome": Conversation(id="Welcome", title="Welcome"),
+    "Tech": Conversation(id="Tech", title="Tech"),
+    "Jokes": Conversation(id="Jokes", title="Jokes"),
+}
+
 class ChatServer:
     def __init__(self) -> None:
-        self.conversations: dict[str, Conversation] = {}
+        self.conversations: dict[str, Conversation] = default_conversations
         self.users: dict[str, WebSocketClientHandler] = {}
         self.tasks: list[asyncio.Task] = []
 
@@ -79,7 +85,7 @@ class ChatServer:
 
     async def user_join(self, username: str, conversation_id: str) -> None:
         if conversation_id not in self.conversations:
-            self.conversations[conversation_id] = Conversation()
+            self.conversations[conversation_id] = Conversation(id=conversation_id, title="Unknown")
         conversation: Conversation = self.conversations[conversation_id]
         if username in conversation.usernames:
             return
@@ -123,3 +129,11 @@ class ChatServer:
         if username not in self.users:
             return
         await self.users[username].send(message)
+
+    def get_coverstations(self) -> dict[str, Conversation]:
+        return self.conversations
+
+    def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
+        if conversation_id not in self.conversations:
+            return None
+        return self.conversations[conversation_id]
