@@ -6,3 +6,4 @@ __pycache__/
 .coverage
 .tox
 htmlcov/
+custom_components/reflex_rxchat.egg-info
