@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import WebSocket
-from rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
+from reflex_rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
 from typing import AsyncGenerator, Optional
 from starlette.websockets import WebSocketDisconnect
 

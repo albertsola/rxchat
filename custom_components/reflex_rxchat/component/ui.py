@@ -1,5 +1,5 @@
 import reflex as rx
-from rxchat.server.events import Message
+from reflex_rxchat.server.events import Message
 from .state import ChatState
 
 

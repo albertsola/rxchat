@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: reflex-rxchat
+Version: 0.0.1
+Summary: Reflex custom component rxchat
+Author-email: YOUREMAIL@domain.com
+License: Apache-2.0
+Keywords: reflex,reflex-custom-components
+Classifier: Development Status :: 4 - Beta
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: reflex>=0.6.6.post3
+Provides-Extra: dev
+Requires-Dist: build; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+
+# rxchat
+
+A Reflex custom component rxchat.
+
+## Installation
+
+```bash
+pip install reflex-rxchat
+```

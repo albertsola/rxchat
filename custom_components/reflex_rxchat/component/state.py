@@ -1,8 +1,9 @@
 import reflex as rx
 import aiohttp
 
-from rxchat.client import ChatClient
-from rxchat.server import Message
+from reflex_rxchat.client import ChatClient
+from reflex_rxchat.server import Message
+
 
 class ChatState(rx.State):
     """The app state."""

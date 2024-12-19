@@ -1,7 +1,7 @@
 # type: ignore
 import pytest
 from unittest.mock import AsyncMock
-from rxchat.server.events import Message
+from reflex_rxchat.server.events import Message
 
 from .chat_client import ChatClient
 

@@ -1,6 +1,6 @@
 from fastapi import WebSocket, APIRouter
-from rxchat.server.chat_server import ChatServer
-from typing import Dict, List
+from reflex_rxchat.server.chat_server import ChatServer
+from typing import List
 import uuid
 from .events import Conversation
 chat_server = ChatServer()
@@ -16,8 +16,8 @@ async def connect_chat(websocket: WebSocket):
         await chat_server.handle_user_disconnected(username)
 
 @router.get("/conversation/{conversation_id}")
-async def get_conversation_id(conversation_id: str) -> Conversation:
-    return chat_server.conversations[conversation_id].tail(10)
+async def get_conversation_id(conversation_id: str) -> dict:
+    return chat_server.conversations[conversation_id].tail(10).dict()
 
 @router.get("/conversations", response_model=List[dict])
 async def get_conversations():
