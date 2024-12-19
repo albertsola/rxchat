@@ -1,6 +1,11 @@
 from typing import AsyncGenerator, Optional
-from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse, WSMessageTypeError
-from rxchat.server import (
+from aiohttp import (
+    ClientSession,
+    WSServerHandshakeError,
+    ClientWebSocketResponse,
+    WSMessageTypeError,
+)
+from reflex_rxchat.server import (
     ClientMessage,
     ServerMessage,
     Message,
@@ -10,7 +15,7 @@ from rxchat.server import (
 
 
 class ChatClient:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, username: str = ""):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
         self.ws: Optional[ClientWebSocketResponse] = None
@@ -38,7 +43,11 @@ class ChatClient:
             yield Message(**data)
 
     async def send_message(self, conversation_id: str, content: str):
-        await self.send(Message(conversation_id=conversation_id, content=content, username=self.username))
+        await self.send(
+            Message(
+                conversation_id=conversation_id, content=content, username=self.username
+            )
+        )
 
     async def send(self, message: ClientMessage):
         assert self.ws is not None, "ChatClient.ws can't be None when calling send()"

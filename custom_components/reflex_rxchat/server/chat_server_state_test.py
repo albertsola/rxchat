@@ -1,6 +1,11 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-from rxchat.server.chat_server import ChatServer, WebSocketClientHandler, Conversation, Message
+from reflex_rxchat.server.chat_server import (
+    ChatServer,
+    WebSocketClientHandler,
+    Conversation,
+    Message,
+)
 
 
 @pytest.fixture

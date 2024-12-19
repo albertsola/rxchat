@@ -1,8 +1,9 @@
 import reflex as rx
 import aiohttp
 
-from rxchat.client import ChatClient
-from rxchat.server import Message
+from reflex_rxchat.client import ChatClient
+from reflex_rxchat.server import Message
+
 
 class ChatState(rx.State):
     """The app state."""
@@ -19,39 +20,49 @@ class ChatState(rx.State):
     username: str = ""
     processing: bool = False
 
+    @rx.var(cache=True)
     def backend_url(self) -> str:
         frontend_scheme: str = self.router.page.host.split(":")[0]
         backend_hostname: str = self.router.headers.host
         return f"{frontend_scheme}://{backend_hostname}/"
-        
+
     @rx.event(background=True)
     async def connect(self):
         try:
             async with self:
                 if self.username.__len__() < 5:
-                    return rx.toast.error("Your username has to be at least 5 characters long")
-            backend_url = self.backend_url()
+                    yield rx.toast.error(
+                        "Your username has to be at least 5 characters long"
+                    )
+                    return
+            backend_url = self.backend_url
             async with self:
-                self._chat = ChatClient(base_url=backend_url)
-                await self._chat.connect(self.username)
-                await self.join_conversation(self.conversation_id)
+                print("Initializing chat client")
+                chat = ChatClient(base_url=backend_url)
+                self._chat = chat
+                await chat.connect(self.username)
+                await chat.join_conversation(self.conversation_id)
                 self.connected = True
-            async for m in self._chat.receive():
+            async for m in chat.receive():
                 async with self:
                     self.messages.append(m)
         except Exception as ex:
+            print(f"Exception chat client {ex}")
             async with self:
-                return rx.toast.error(f"Error: {ex}")
+                yield rx.toast.error(f"Error: {ex}")
+            raise ex
 
         finally:
+            print("Chat client finalizing")
             async with self:
-                self._chat = None
                 self.connected = False
                 self.messages = []
 
     @rx.event
     async def change_conversation(self, conversation_id: str):
-        assert self._chat is not None, "ChatState._chat needs to be initialized to change_conversation"
+        assert (
+            self._chat is not None
+        ), "ChatState._chat needs to be initialized to change_conversation"
         await self.leave_conversation(self.conversation_id)
         self.conversation_id = conversation_id
         await self.join_conversation(self.conversation_id)
@@ -69,9 +80,11 @@ class ChatState(rx.State):
 
     @rx.event
     async def send_message(self, form_data: dict):
-        assert self._chat is not None, "ChatState._chat needs to be initialized to send a message"
+        assert (
+            self._chat is not None
+        ), "ChatState._chat needs to be initialized to send a message"
         self.processing = True
-        self.content = form_data['content']
+        self.content = form_data["content"]
         if not self.content:
             return
         await self._chat.send_message(self.conversation_id, self.content)
@@ -85,7 +98,7 @@ class ChatState(rx.State):
     @staticmethod
     async def fetch_conversations():
         """Fetch the list of conversations from the backend."""
-        url = f"http://localhost:8000/conversations"
+        url = "http://localhost:8000/conversations"
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -94,21 +107,29 @@ class ChatState(rx.State):
                         data = await response.json()
                         return data
                     else:
-                        print(f"Failed to fetch conversations. Status code: {response.status}")
+                        print(
+                            f"Failed to fetch conversations. Status code: {response.status}"
+                        )
                         return []
         except Exception as e:
             print(f"Error fetching conversations: {e}")
             return []
-    
+
     @rx.event
     async def load_conversations(self):
         """Load the conversations into the state."""
         conversations = await self.fetch_conversations()
-        
+
         if conversations:
-            self.conversations_data = {conversation['id']: conversation for conversation in conversations}
-            self.conversations = [f"{conversation['id']}" for conversation in conversations]
+            self.conversations_data = {
+                conversation["id"]: conversation for conversation in conversations
+            }
+            self.conversations = [
+                f"{conversation['id']}" for conversation in conversations
+            ]
 
     async def update_conversations(self, conversation_id):
         await self.load_conversations()
-        self.conversation_user_count = self.conversations_data[conversation_id]["users_count"]
+        self.conversation_user_count = self.conversations_data[conversation_id][
+            "users_count"
+        ]

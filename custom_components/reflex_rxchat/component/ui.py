@@ -1,14 +1,11 @@
 import reflex as rx
-from rxchat.server.events import Message
+from reflex_rxchat.server.events import Message
 from .state import ChatState
 
 
 def render_own_message(message: Message) -> rx.Component:
     return rx.hstack(
-        rx.card(
-            message.content,
-            margin_left="auto"
-        ),
+        rx.card(message.content, margin_left="auto"),
         width="100%",
     )
 
@@ -18,22 +15,14 @@ def message_header(message: Message) -> rx.Component:
         rx.avatar(fallback=message.username[:3], radius="full"),
         rx.hstack(
             rx.popover.root(
-                rx.popover.trigger(
-                    rx.icon("clock", size=11)
-                ),
-                rx.popover.content(
-                    rx.moment(message.timestamp)
-                )
+                rx.popover.trigger(rx.icon("clock", size=11)),
+                rx.popover.content(rx.moment(message.timestamp)),
             ),
             rx.popover.root(
-                rx.popover.trigger(
-                    rx.icon("user", size=11)
-                ),
-                rx.popover.content(
-                    message.username
-                )
-            )
-        )
+                rx.popover.trigger(rx.icon("user", size=11)),
+                rx.popover.content(message.username),
+            ),
+        ),
     )
 
 
@@ -42,7 +31,7 @@ def render_other_message(message: Message) -> rx.Component:
         message_header(message),
         rx.card(
             message.content,
-        )
+        ),
     )
 
 
@@ -50,7 +39,7 @@ def message_render(message: Message) -> rx.Component:
     return rx.cond(
         ChatState.username == message.username,
         render_own_message(message),
-        render_other_message(message)
+        render_other_message(message),
     )
 
 
@@ -65,18 +54,34 @@ def messages() -> rx.Component:
 
 def navbar() -> rx.Component:
     return rx.hstack(
-        rx.input(type="text", on_change=ChatState.set_username, value=ChatState.username, read_only=ChatState.connected, placeholder="Your username"),
+        rx.input(
+            type="text",
+            on_change=ChatState.set_username,
+            value=ChatState.username,
+            read_only=ChatState.connected,
+            placeholder="Your username",
+        ),
         rx.select(
             ChatState.conversations,
             on_change=ChatState.change_conversation,
             value=ChatState.conversation_id,
-            read_only=~ChatState.connected
+            read_only=~ChatState.connected,
         ),
-        rx.badge(f"Users: {ChatState.conversation_user_count}", variant="soft", high_contrast=True),
+        rx.badge(
+            f"Users: {ChatState.conversation_user_count}",
+            variant="soft",
+            high_contrast=True,
+        ),
         rx.cond(
             ChatState.connected,
-            rx.hstack(rx.badge("Connected"), rx.button("Disconnect", on_click=ChatState.disconnect)),
-            rx.hstack(rx.badge("Disconnected"), rx.button("Connect", on_click=ChatState.connect))
+            rx.hstack(
+                rx.badge("Connected"),
+                rx.button("Disconnect", on_click=ChatState.disconnect),
+            ),
+            rx.hstack(
+                rx.badge("Disconnected"),
+                rx.button("Connect", on_click=ChatState.connect),
+            ),
         ),
         justify_content="space-between",
         align_items="center",
@@ -87,9 +92,20 @@ def navbar() -> rx.Component:
 
 def message_composer_old() -> rx.Component:
     return rx.hstack(
-        rx.select(["welcome", "queries"], on_change=ChatState.change_conversation, value=ChatState.conversation_id),
-        rx.input(name="content", on_change=ChatState.set_content, value=ChatState.content, width="100%"),
-        rx.button("Send", disabled=~ChatState.connected, on_click=ChatState.send_message),
+        rx.select(
+            ["welcome", "queries"],
+            on_change=ChatState.change_conversation,
+            value=ChatState.conversation_id,
+        ),
+        rx.input(
+            name="content",
+            on_change=ChatState.set_content,
+            value=ChatState.content,
+            width="100%",
+        ),
+        rx.button(
+            "Send", disabled=~ChatState.connected, on_click=ChatState.send_message
+        ),
         width="100%",
     )
 
@@ -120,10 +136,7 @@ def message_composer() -> rx.Component:
                     on_submit=ChatState.send_message,
                     reset_on_submit=True,
                 )
-
-
             ),
-
         ),
         position="sticky",
         bottom="0",
@@ -141,6 +154,7 @@ def message_composer() -> rx.Component:
 def chat() -> rx.Component:
     return rx.box(
         navbar(),
+        ChatState.backend_url,
         messages(),
         message_composer(),
         width="100%",

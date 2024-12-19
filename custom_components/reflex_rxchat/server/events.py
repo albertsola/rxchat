@@ -45,7 +45,7 @@ class Conversation(rx.Model):
             id=self.id,
             title=self.title,
             usernames=self.usernames,
-            messages=self.messages[:num_messages]
+            messages=self.messages[:num_messages],
         )
 
 
