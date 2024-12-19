@@ -59,6 +59,7 @@ default_conversations: dict[str, Conversation] = {
     "Jokes": Conversation(id="Jokes", title="Jokes"),
 }
 
+
 class ChatServer:
     def __init__(self) -> None:
         self.conversations: dict[str, Conversation] = default_conversations

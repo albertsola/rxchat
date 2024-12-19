@@ -141,6 +141,7 @@ def message_composer() -> rx.Component:
 def chat() -> rx.Component:
     return rx.box(
         navbar(),
+        ChatState.backend_url,
         messages(),
         message_composer(),
         width="100%",

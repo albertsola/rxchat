@@ -1,3 +1,3 @@
-from .chat_client import ChatClient
+from .chat_client import ChatClient, ChatClientInterface
 
 __all__ = ["ChatClient"]

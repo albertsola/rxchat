@@ -3,6 +3,7 @@ import aiohttp
 
 from reflex_rxchat.client import ChatClient
 from reflex_rxchat.server import Message
+from pydantic.fields import PrivateAttr
 
 
 class ChatState(rx.State):
@@ -20,33 +21,39 @@ class ChatState(rx.State):
     username: str = ""
     processing: bool = False
 
+    @rx.var(cache=True)
     def backend_url(self) -> str:
         frontend_scheme: str = self.router.page.host.split(":")[0]
         backend_hostname: str = self.router.headers.host
         return f"{frontend_scheme}://{backend_hostname}/"
-        
+
     @rx.event(background=True)
     async def connect(self):
         try:
             async with self:
                 if self.username.__len__() < 5:
-                    return rx.toast.error("Your username has to be at least 5 characters long")
-            backend_url = self.backend_url()
+                    yield rx.toast.error("Your username has to be at least 5 characters long")
+                    return
+            backend_url = self.backend_url
             async with self:
-                self._chat = ChatClient(base_url=backend_url)
-                await self._chat.connect(self.username)
-                await self.join_conversation(self.conversation_id)
+                print("Initializing chat client")
+                chat = ChatClient(base_url=backend_url)
+                await chat.connect(self.username)
+                await chat.join_conversation(self.conversation_id)
                 self.connected = True
-            async for m in self._chat.receive():
+            async for m in chat.receive():
                 async with self:
                     self.messages.append(m)
         except Exception as ex:
+            print(f"Exception chat client {ex}")
             async with self:
-                return rx.toast.error(f"Error: {ex}")
+                yield rx.toast.error(f"Error: {ex}")
+            raise ex
 
         finally:
+            print("Chat client finalizing")
             async with self:
-                self._chat = None
+                chat = None
                 self.connected = False
                 self.messages = []
 

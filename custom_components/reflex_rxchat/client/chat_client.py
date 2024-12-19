@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from typing import AsyncGenerator, Optional
 from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse, WSMessageTypeError
 from reflex_rxchat.server import (
@@ -9,8 +10,38 @@ from reflex_rxchat.server import (
 )
 
 
-class ChatClient:
-    def __init__(self, base_url: str):
+class ChatClientInterface(metaclass=ABCMeta):
+    @abstractmethod
+    async def connect(self, username):
+        pass
+
+    @abstractmethod
+    async def receive(self) -> AsyncGenerator[ServerMessage, None]:
+        pass
+
+    @abstractmethod
+    async def send(self, message):
+        pass
+
+    @abstractmethod
+    async def join_conversation(self, conversation_id):
+        pass
+
+    @abstractmethod
+    async def leave_conversation(self, conversation_id):
+        pass
+
+    @abstractmethod
+    async def message(self, conversation_id, content):
+        pass
+
+    @abstractmethod
+    async def disconnect(self):
+        pass
+
+
+class ChatClient(ChatClientInterface):
+    def __init__(self, base_url: str, username: str = ""):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
         self.ws: Optional[ClientWebSocketResponse] = None
