@@ -22,18 +22,10 @@ async def get_conversation_id(conversation_id: str) -> Conversation:
 @router.get("/conversations", response_model=List[dict])
 async def get_conversations():
     response = []
-    default_conversations: List[str] = ["Welcome", "Jokes", "Tech"]
-    
-    for conversation_id in default_conversations:
-        conversation = chat_server.get_conversation(conversation_id)
-        if not conversation:
-            converstation_users_count = 0
-        else:
-            converstation_users_count = conversation.user_count()
-
+    conversations = chat_server.get_coverstations()
+    for conversation in conversations.values():
         response.append({
-            "id": conversation_id,
-            "users_count": converstation_users_count
+            "id": conversation.id,
+            "users_count": conversation.user_count()
         })
     return response
-

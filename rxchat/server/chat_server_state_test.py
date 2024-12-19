@@ -101,7 +101,7 @@ async def test_user_leave(chat_server):
 
     conversation_id = "test_conversation"
 
-    conversation = Conversation()
+    conversation = Conversation(id=conversation_id, title="")
 
     username = "test_user"
     user_handler = AsyncMock(spec=WebSocketClientHandler)
@@ -151,7 +151,7 @@ async def test_send_message_successful(chat_server):
     )
 
     # Setup mock conversation and users
-    conversation = Conversation()
+    conversation = Conversation(id=conversation_id, title="")
     conversation.usernames = [username]
     chat_server.conversations = {conversation_id: conversation}
 

@@ -24,6 +24,8 @@ class Message(rx.Model):
 
 
 class Conversation(rx.Model):
+    id: str
+    title: str
     usernames: list[str] = []
     messages: list[Message] = []
 
@@ -40,6 +42,8 @@ class Conversation(rx.Model):
 
     def tail(self, num_messages: int) -> "Conversation":
         return Conversation(
+            id=self.id,
+            title=self.title,
             usernames=self.usernames,
             messages=self.messages[:num_messages]
         )
