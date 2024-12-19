@@ -5,9 +5,7 @@ name: RxChat Tests
 
 on:
   push:
-    branches: [ "prototype" ]
   pull_request:
-    branches: [ "prototype" ]
 
 permissions:
   contents: read
