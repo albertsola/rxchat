@@ -1,6 +1,10 @@
-from abc import ABCMeta, abstractmethod
 from typing import AsyncGenerator, Optional
-from aiohttp import ClientSession, WSServerHandshakeError, ClientWebSocketResponse, WSMessageTypeError
+from aiohttp import (
+    ClientSession,
+    WSServerHandshakeError,
+    ClientWebSocketResponse,
+    WSMessageTypeError,
+)
 from reflex_rxchat.server import (
     ClientMessage,
     ServerMessage,
@@ -10,37 +14,7 @@ from reflex_rxchat.server import (
 )
 
 
-class ChatClientInterface(metaclass=ABCMeta):
-    @abstractmethod
-    async def connect(self, username):
-        pass
-
-    @abstractmethod
-    async def receive(self) -> AsyncGenerator[ServerMessage, None]:
-        pass
-
-    @abstractmethod
-    async def send(self, message):
-        pass
-
-    @abstractmethod
-    async def join_conversation(self, conversation_id):
-        pass
-
-    @abstractmethod
-    async def leave_conversation(self, conversation_id):
-        pass
-
-    @abstractmethod
-    async def message(self, conversation_id, content):
-        pass
-
-    @abstractmethod
-    async def disconnect(self):
-        pass
-
-
-class ChatClient(ChatClientInterface):
+class ChatClient:
     def __init__(self, base_url: str, username: str = ""):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)
@@ -69,7 +43,11 @@ class ChatClient(ChatClientInterface):
             yield Message(**data)
 
     async def send_message(self, conversation_id: str, content: str):
-        await self.send(Message(conversation_id=conversation_id, content=content, username=self.username))
+        await self.send(
+            Message(
+                conversation_id=conversation_id, content=content, username=self.username
+            )
+        )
 
     async def send(self, message: ClientMessage):
         assert self.ws is not None, "ChatClient.ws can't be None when calling send()"

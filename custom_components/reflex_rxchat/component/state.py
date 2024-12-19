@@ -3,7 +3,6 @@ import aiohttp
 
 from reflex_rxchat.client import ChatClient
 from reflex_rxchat.server import Message
-from pydantic.fields import PrivateAttr
 
 
 class ChatState(rx.State):
@@ -32,12 +31,15 @@ class ChatState(rx.State):
         try:
             async with self:
                 if self.username.__len__() < 5:
-                    yield rx.toast.error("Your username has to be at least 5 characters long")
+                    yield rx.toast.error(
+                        "Your username has to be at least 5 characters long"
+                    )
                     return
             backend_url = self.backend_url
             async with self:
                 print("Initializing chat client")
                 chat = ChatClient(base_url=backend_url)
+                self._chat = chat
                 await chat.connect(self.username)
                 await chat.join_conversation(self.conversation_id)
                 self.connected = True
@@ -53,13 +55,14 @@ class ChatState(rx.State):
         finally:
             print("Chat client finalizing")
             async with self:
-                chat = None
                 self.connected = False
                 self.messages = []
 
     @rx.event
     async def change_conversation(self, conversation_id: str):
-        assert self._chat is not None, "ChatState._chat needs to be initialized to change_conversation"
+        assert (
+            self._chat is not None
+        ), "ChatState._chat needs to be initialized to change_conversation"
         await self.leave_conversation(self.conversation_id)
         self.conversation_id = conversation_id
         await self.join_conversation(self.conversation_id)
@@ -77,9 +80,11 @@ class ChatState(rx.State):
 
     @rx.event
     async def send_message(self, form_data: dict):
-        assert self._chat is not None, "ChatState._chat needs to be initialized to send a message"
+        assert (
+            self._chat is not None
+        ), "ChatState._chat needs to be initialized to send a message"
         self.processing = True
-        self.content = form_data['content']
+        self.content = form_data["content"]
         if not self.content:
             return
         await self._chat.send_message(self.conversation_id, self.content)
@@ -93,7 +98,7 @@ class ChatState(rx.State):
     @staticmethod
     async def fetch_conversations():
         """Fetch the list of conversations from the backend."""
-        url = f"http://localhost:8000/conversations"
+        url = "http://localhost:8000/conversations"
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -102,21 +107,29 @@ class ChatState(rx.State):
                         data = await response.json()
                         return data
                     else:
-                        print(f"Failed to fetch conversations. Status code: {response.status}")
+                        print(
+                            f"Failed to fetch conversations. Status code: {response.status}"
+                        )
                         return []
         except Exception as e:
             print(f"Error fetching conversations: {e}")
             return []
-    
+
     @rx.event
     async def load_conversations(self):
         """Load the conversations into the state."""
         conversations = await self.fetch_conversations()
-        
+
         if conversations:
-            self.conversations_data = {conversation['id']: conversation for conversation in conversations}
-            self.conversations = [f"{conversation['id']}" for conversation in conversations]
+            self.conversations_data = {
+                conversation["id"]: conversation for conversation in conversations
+            }
+            self.conversations = [
+                f"{conversation['id']}" for conversation in conversations
+            ]
 
     async def update_conversations(self, conversation_id):
         await self.load_conversations()
-        self.conversation_user_count = self.conversations_data[conversation_id]["users_count"]
+        self.conversation_user_count = self.conversations_data[conversation_id][
+            "users_count"
+        ]

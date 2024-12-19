@@ -5,7 +5,7 @@ from .events import (
     Message,
     LeaveConversation,
     JoinConversation,
-    Conversation
+    Conversation,
 )
 
 __all__ = [
@@ -15,5 +15,5 @@ __all__ = [
     "Message",
     "LeaveConversation",
     "JoinConversation",
-    "Conversation"
+    "Conversation",
 ]

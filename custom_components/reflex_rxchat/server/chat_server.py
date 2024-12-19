@@ -1,6 +1,13 @@
 import asyncio
 from fastapi import WebSocket
-from reflex_rxchat.server.events import Message, Conversation, JoinConversation, LeaveConversation, ServerMessage, ClientMessage
+from reflex_rxchat.server.events import (
+    Message,
+    Conversation,
+    JoinConversation,
+    LeaveConversation,
+    ServerMessage,
+    ClientMessage,
+)
 from typing import AsyncGenerator, Optional
 from starlette.websockets import WebSocketDisconnect
 
@@ -86,7 +93,9 @@ class ChatServer:
 
     async def user_join(self, username: str, conversation_id: str) -> None:
         if conversation_id not in self.conversations:
-            self.conversations[conversation_id] = Conversation(id=conversation_id, title="Unknown")
+            self.conversations[conversation_id] = Conversation(
+                id=conversation_id, title="Unknown"
+            )
         conversation: Conversation = self.conversations[conversation_id]
         if username in conversation.usernames:
             return
