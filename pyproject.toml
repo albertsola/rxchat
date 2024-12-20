@@ -6,8 +6,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reflex_rxchat"
-version = "0.1"
+name = "reflex-rxchat"
+version = "0.2.3"
 description = "Local chat for Reflex applications"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -15,11 +15,10 @@ requires-python = ">=3.12"
 authors = [{ name = "Albert Sola", email = "albert.sola@tardix.net" }]
 keywords = [
     "reflex",
-    "reflex-custom-components"
-]
+    "reflex-custom-components"]
 
 dependencies = [
-    "reflex==0.6.6.post3",
+    "reflex>=0.6.6",
     "aiohttp"
 ]
 
@@ -29,19 +28,17 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/albertsola/rxchat"
-Repository = "https://github.com/albertsola/rxchat.git"
-"Bug Tracker" = "https://github.com/albertsola/rxchat/issues"
 
 [project.optional-dependencies]
-dev = ["build", "twine", "pytest", "pytest-cov",]
+dev = ["build", "twine"]
 
 [tool.setuptools.packages.find]
 where = ["custom_components"]
 
 [tool.poetry]
-name = "reflex_rxchat"
-version = "0.1.0"
-description = "Chat for reflex.dev"
+name = "reflex-rxchat"
+version = "0.2.2"
+description = "Drop in self hosted chat for reflex.dev"
 authors = ["Albert Sola <albert.sola@gmail.com>"]
 license = "GPL"
 readme = "README.md"
