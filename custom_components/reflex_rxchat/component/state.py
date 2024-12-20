@@ -1,3 +1,5 @@
+import asyncio
+
 import reflex as rx
 
 from reflex_rxchat.client import WebSocketChatClient
@@ -5,7 +7,7 @@ from reflex_rxchat.server import Message
 
 from reflex_rxchat.client import ChatRestClient
 
-CHAT_ENDPOINT = "http://localhost:8000"
+CHAT_ENDPOINT:str = "http://localhost:8000"
 chat: ChatRestClient = ChatRestClient(CHAT_ENDPOINT)
 
 
@@ -25,22 +27,24 @@ class ChatState(rx.State):
 
     @rx.event(background=True)
     async def connect(self):
+
         try:
+
             async with self:
                 if self.username.__len__() < 5:
                     yield rx.toast.error(
                         "Your username has to be at least 5 characters long"
                     )
                     return
-
+            ws_chat: WebSocketChatClient = WebSocketChatClient(base_url=CHAT_ENDPOINT)
+            await ws_chat.connect(self.username)
+            await ws_chat.join_conversation(self.conversation_id)
             async with self:
-                print("Initializing chat client")
-                chat = WebSocketChatClient(base_url=CHAT_ENDPOINT)
-                await chat.connect(self.username)
-                await chat.join_conversation(self.conversation_id)
                 self.connected = True
-            async for m in chat.receive():
+            async for m in ws_chat.receive():
                 async with self:
+                    if m.event == "conversation.message":
+                        yield rx.toast(m.content)
                     self.messages.append(m)
         except Exception as ex:
             print(f"Exception chat client {ex}")
@@ -49,10 +53,13 @@ class ChatState(rx.State):
             raise ex
 
         finally:
+            await asyncio.sleep(3)
             print("Chat client finalizing")
             async with self:
                 self.connected = False
                 self.messages = []
+            if ws_chat is not None:
+                await ws_chat.disconnect()
 
     @rx.event
     async def change_conversation(self, conversation_id: str):

@@ -1,5 +1,6 @@
 import asyncio
-from fastapi import WebSocket
+from . import logger
+from fastapi.websockets import WebSocket, WebSocketState
 from reflex_rxchat.server.events import (
     Message,
     Conversation,
@@ -17,9 +18,13 @@ class WebSocketClientHandler:
         self.ws: WebSocket = ws
         self.username: str = username
 
+    def is_connected(self):
+        self.ws.state == WebSocketState.CONNECTED
+
     async def __call__(self, chat_state: "ChatServer") -> None:
         try:
             await self.ws.accept()
+            logger.info(f" - {self.username} connected")
             async for message in self.receive():
                 if message.event == "conversation.message":
                     message.username = self.username
@@ -33,31 +38,39 @@ class WebSocketClientHandler:
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
-        except (asyncio.CancelledError, StopAsyncIteration):
-            await self.ws.close()
-
-    async def receive(self) -> AsyncGenerator[ServerMessage, None]:
-        try:
-            while True:
-                data = await self.ws.receive_json()
-                match (data.get("event", None)):
-                    case "conversation.message":
-                        yield Message(**data)
-                    case "conversation.join":
-                        yield JoinConversation(**data)
-                    case "conversation.leave":
-                        yield LeaveConversation(**data)
-                    case _:
-                        raise RuntimeError(
-                            f"Server received unknown message. payload={data}"
-                        )
-        except WebSocketDisconnect as ex:
-            print(f"WebSocketDisconnect: {ex}")
         except StopAsyncIteration:
             pass
+        except WebSocketDisconnect as ex:
+            pass
+        except (asyncio.CancelledError, StopAsyncIteration):
+            pass
+        finally:
+            logger.info(f" - {self.username} disconnected")
+            del chat_state.users[self.username]
+            await self.close()
+
+    async def receive(self) -> AsyncGenerator[ServerMessage, None]:
+
+        while True:
+            data = await self.ws.receive_json()
+            match (data.get("event", None)):
+                case "conversation.message":
+                    yield Message(**data)
+                case "conversation.join":
+                    yield JoinConversation(**data)
+                case "conversation.leave":
+                    yield LeaveConversation(**data)
+                case _:
+                    raise RuntimeError(
+                        f"Server received unknown message. payload={data}"
+                    )
 
     async def send(self, message: ClientMessage) -> None:
         await self.ws.send_text(message.json())
+
+    async def close(self):
+        if self.is_connected():
+            await self.ws.close()
 
 
 default_conversations: dict[str, Conversation] = {
@@ -140,10 +153,29 @@ class ChatServer:
             return
         await self.users[username].send(message)
 
-    def get_coverstations(self) -> dict[str, Conversation]:
+    def get_converstations(self) -> dict[str, Conversation]:
         return self.conversations
 
     def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
         if conversation_id not in self.conversations:
             return None
         return self.conversations[conversation_id]
+
+    async def close(self, notify=False, content="Server is shutting down", timeout=2):
+
+        if notify:
+            logger.info("Notifying server stopping...")
+            message = Message(
+                username="_system", conversation_id="_system", content=content
+            )
+            tasks = [
+                asyncio.create_task(user_handler.send(message))
+                for user_handler in self.users.values()
+            ]
+            await asyncio.gather(*tasks)
+            await asyncio.sleep(timeout)
+
+        t = []
+        for user_handler in self.users.values():
+            t.append(asyncio.create_task(user_handler.close()))
+        await asyncio.gather(*t)

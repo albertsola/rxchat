@@ -67,4 +67,7 @@ class WebSocketChatClient:
         )
 
     async def disconnect(self):
-        await self._session.close()
+        if not self.ws.closed:
+            await self.ws.close()
+        if not self._session.closed:
+            await self._session.close()
