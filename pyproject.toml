@@ -19,7 +19,8 @@ keywords = [
 ]
 
 dependencies = [
-    "reflex==0.6.6.post3"
+    "reflex==0.6.6.post3",
+    "aiohttp"
 ]
 
 classifiers = [
@@ -28,9 +29,11 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/albertsola/rxchat"
+Repository = "https://github.com/albertsola/rxchat.git"
+"Bug Tracker" = "https://github.com/albertsola/rxchat/issues"
 
 [project.optional-dependencies]
-dev = ["build", "twine"]
+dev = ["build", "twine", "pytest", "pytest-cov",]
 
 [tool.setuptools.packages.find]
 where = ["custom_components"]
@@ -42,6 +45,9 @@ description = "Chat for reflex.dev"
 authors = ["Albert Sola <albert.sola@gmail.com>"]
 license = "GPL"
 readme = "README.md"
+packages = [
+    { include = "custom_components/reflex_rxchat" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -54,8 +60,15 @@ pytest-asyncio = "*"
 mypy = "*"
 black = "*"
 tox = "*"
-flake8 = "*"
-coverage = "*"
+flake8="*"
+Flake8-pyproject="*"
+pytest-cov = "*"
+
+[tool.poetry.scripts]
+lint = "flake8.main.cli:main"
+typecheck = "mypy.main:main"
+test = "pytest:main"
+
 
 [tool.black]
 line-length = 88
@@ -67,9 +80,19 @@ exclude = '''
   | \.venv
   | build
   | dist
+  | venv
+  | .tox
 )/
 '''
 
-[tool.coverage.run]
-omit = [ "*_test.py" ]
-command_line = "-m pytest custom_components"
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+    "integration",
+]
+
+[tool.flake8]
+max-line-length = 105
+exclude = ".venv,venv,.tox,.git,*.egg-info,__pycache__"

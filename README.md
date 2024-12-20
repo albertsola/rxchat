@@ -46,13 +46,14 @@ Ensure you have the following installed:
 ### Testing
 
 ```
-poetry run flake8 rxchat
+poetry run tox # Checks everything
 
-poetry run mypy rxchat
+poetry run flake8
 
-poetry run pytest
+poetry run mypy
 
-poetry run coverage run
+poetry run pytest --cov
 
-poetry run tox
+poetry run black [file or a folder]
+
 ```
