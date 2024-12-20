@@ -63,6 +63,7 @@ tox = "*"
 flake8="*"
 Flake8-pyproject="*"
 pytest-cov = "*"
+pytest-mock = "*"
 
 [tool.poetry.scripts]
 lint = "flake8.main.cli:main"
