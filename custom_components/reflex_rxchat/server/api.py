@@ -2,6 +2,7 @@ from fastapi import WebSocket, APIRouter
 from reflex_rxchat.server.chat_server import ChatServer
 from typing import List
 import uuid
+from reflex_rxchat.server.events import Message
 
 chat_server = ChatServer()
 router = APIRouter()
@@ -30,3 +31,21 @@ async def get_conversations():
             {"id": conversation.id, "users_count": conversation.user_count()}
         )
     return response
+
+
+@router.post("/conversation/{conversation_id}/join")
+async def join_conversation(username: str, conversation_id: str):
+    await chat_server.user_join(username, conversation_id)
+
+
+@router.post("/conversation/{conversation_id}/leave")
+async def leave_conversation(username: str, conversation_id: str):
+    await chat_server.user_leave(username, conversation_id)
+
+
+@router.put("/conversation/{conversation_id}/message")
+async def message(username: str, conversation_id: str, content: str):
+    message = Message(
+        username=username, conversation_id=conversation_id, content=content
+    )
+    await chat_server.send_message(message)

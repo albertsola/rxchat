@@ -14,7 +14,7 @@ from reflex_rxchat.server import (
 )
 
 
-class ChatClient:
+class WebSocketChatClient:
     def __init__(self, base_url: str, username: str = ""):
         self.base_url: str = base_url
         self._session = ClientSession(base_url=base_url)

@@ -3,26 +3,26 @@ import pytest
 from unittest.mock import AsyncMock
 from reflex_rxchat.server.events import Message
 
-from .chat_client import ChatClient
+from .ws_client import WebSocketChatClient
 
 
 @pytest.fixture
 def client():
-    ChatClient.__init__ = lambda _, base_url: None
-    client = ChatClient(base_url="xyz")
+    WebSocketChatClient.__init__ = lambda _, base_url: None
+    client = WebSocketChatClient(base_url="xyz")
     client._session = AsyncMock()
     client.ws = AsyncMock()
     return client
 
 
 @pytest.mark.asyncio
-async def test_connect_success(client: ChatClient):
+async def test_connect_success(client: WebSocketChatClient):
     await client.connect(username="testuser")
     client._session.ws_connect.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_receive_message(client: ChatClient):
+async def test_receive_message(client: WebSocketChatClient):
     client.ws.receive_json = AsyncMock(
         side_effect=[
             {"conversation_id": "conv1", "username": "test", "content": "Hello"},
@@ -40,7 +40,7 @@ async def test_receive_message(client: ChatClient):
 
 
 @pytest.mark.asyncio
-async def test_send_message(client: ChatClient):
+async def test_send_message(client: WebSocketChatClient):
     await client.connect(username="testuser")
     message = Message(conversation_id="x", username="test", content="y")
 
@@ -50,7 +50,7 @@ async def test_send_message(client: ChatClient):
 
 
 @pytest.mark.asyncio
-async def test_join_conversation(client: ChatClient):
+async def test_join_conversation(client: WebSocketChatClient):
 
     await client.connect(username="testuser")
     await client.join_conversation("test_conv")
@@ -58,7 +58,7 @@ async def test_join_conversation(client: ChatClient):
 
 
 @pytest.mark.asyncio
-async def test_leave_conversation(client: ChatClient):
+async def test_leave_conversation(client: WebSocketChatClient):
 
     await client.connect(username="testuser")
     await client.leave_conversation("test_conv")
@@ -66,7 +66,7 @@ async def test_leave_conversation(client: ChatClient):
 
 
 @pytest.mark.asyncio
-async def test_send_plain_message(client: ChatClient):
+async def test_send_plain_message(client: WebSocketChatClient):
 
     await client.connect(username="testuser")
     await client.message("test_conv", "Hi!")
