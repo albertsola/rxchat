@@ -7,11 +7,11 @@ from aiohttp import (
 )
 from reflex_rxchat.server import (
     ClientMessage,
-    ServerMessage,
     Message,
-    LeaveConversation,
-    JoinConversation,
+    RequestLeaveConversation,
+    RequestJoinConversation
 )
+from reflex_rxchat.server.events import ServerMessage, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation
 
 
 class WebSocketChatClient:
@@ -40,7 +40,22 @@ class WebSocketChatClient:
                 data: dict = await self.ws.receive_json()
             except WSMessageTypeError:
                 return
-            yield Message(**data)
+
+            match (data.get("event", None)):
+                case "conversation.message":
+                    yield Message(**data)
+
+                case "response.conversation.join":
+                    yield ResponseJoinConversation(**data)
+
+                case "event.conversation.join":
+                    yield EventUserJoinConversation(**data)
+                case "event.conversation.leave":
+                    yield EventUserLeaveConversation(**data)
+                case _:
+                    raise RuntimeError(
+                        f"Server received unknown message. payload={data}"
+                    )
 
     async def send_message(self, conversation_id: str, content: str):
         await self.send(
@@ -54,10 +69,10 @@ class WebSocketChatClient:
         await self.ws.send_str(message.json())
 
     async def join_conversation(self, conversation_id: str):
-        await self.send(JoinConversation(conversation_id=conversation_id))
+        await self.send(RequestJoinConversation(conversation_id=conversation_id))
 
     async def leave_conversation(self, conversation_id: str):
-        await self.send(LeaveConversation(conversation_id=conversation_id))
+        await self.send(RequestLeaveConversation(conversation_id=conversation_id))
 
     async def message(self, conversation_id: str, content: str):
         await self.send(

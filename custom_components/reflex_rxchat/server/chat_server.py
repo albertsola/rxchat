@@ -4,10 +4,13 @@ from fastapi.websockets import WebSocket, WebSocketState
 from reflex_rxchat.server.events import (
     Message,
     Conversation,
-    JoinConversation,
-    LeaveConversation,
+    RequestJoinConversation,
+    RequestLeaveConversation,
     ServerMessage,
     ClientMessage,
+    EventUserLeaveConversation,
+    EventUserJoinConversation,
+    ResponseJoinConversation
 )
 from typing import AsyncGenerator, Optional
 from starlette.websockets import WebSocketDisconnect
@@ -32,9 +35,9 @@ class WebSocketClientHandler:
                         await chat_state.send_message(message)
                     finally:
                         pass
-                elif message.event == "conversation.join":
+                elif message.event == "request.conversation.join":
                     await chat_state.user_join(self.username, message.conversation_id)
-                elif message.event == "conversation.leave":
+                elif message.event == "request.conversation.leave":
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
@@ -46,7 +49,8 @@ class WebSocketClientHandler:
             pass
         finally:
             logger.info(f" - {self.username} disconnected")
-            del chat_state.users[self.username]
+            if self.username in chat_state.users:
+                del chat_state.users[self.username]
             await self.close()
 
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:
@@ -56,16 +60,16 @@ class WebSocketClientHandler:
             match (data.get("event", None)):
                 case "conversation.message":
                     yield Message(**data)
-                case "conversation.join":
-                    yield JoinConversation(**data)
-                case "conversation.leave":
-                    yield LeaveConversation(**data)
+                case "request.conversation.join":
+                    yield RequestJoinConversation(**data)
+                case "request.conversation.leave":
+                    yield RequestLeaveConversation(**data)
                 case _:
                     raise RuntimeError(
                         f"Server received unknown message. payload={data}"
                     )
 
-    async def send(self, message: ClientMessage) -> None:
+    async def send(self, message: ServerMessage) -> None:
         await self.ws.send_text(message.json())
 
     async def close(self):
@@ -113,11 +117,14 @@ class ChatServer:
         if username in conversation.usernames:
             return
         conversation.usernames.append(username)
+        await self.notify(username, ResponseJoinConversation(
+            conversation_id=conversation_id,
+            users=conversation.usernames
+        ))
         await self.send_message(
-            Message(
+            EventUserJoinConversation(
                 conversation_id=conversation_id,
-                username="_system",
-                content=f"{username} joined the {conversation_id} conversation.",
+                username=username,
             )
         )
 
@@ -128,16 +135,13 @@ class ChatServer:
         conversation: Conversation = self.conversations[conversation_id]
         if username not in conversation.usernames:
             return
-        await self.send_message(
-            Message(
-                conversation_id=conversation_id,
-                username="_system",
-                content=f"{username} left the {conversation_id} conversation.",
-            )
-        )
+        await self.send_message(EventUserLeaveConversation(
+            conversation_id=conversation_id,
+            username=username
+        ))
         conversation.usernames.remove(username)
 
-    async def send_message(self, message: Message) -> None:
+    async def send_message(self, message: ServerMessage) -> None:
         if message.conversation_id not in self.conversations.keys():
             raise RuntimeError(f"Conversation {message.conversation_id=} not found")
         conversation: Conversation = self.conversations[message.conversation_id]
@@ -148,8 +152,9 @@ class ChatServer:
         ]
         await asyncio.gather(*tasks)
 
-    async def notify(self, username: str, message: Message) -> None:
+    async def notify(self, username: str, message: ServerMessage) -> None:
         if username not in self.users:
+            logger.warning(f"Unable to notify {username} message={message} as it is not in users")
             return
         await self.users[username].send(message)
 

@@ -10,8 +10,8 @@ from .events import (
     ClientMessage,
     ServerMessage,
     Message,
-    LeaveConversation,
-    JoinConversation,
+    RequestLeaveConversation,
+    RequestJoinConversation,
     Conversation,
 )
 
@@ -20,7 +20,7 @@ __all__ = [
     "ClientMessage",
     "ServerMessage",
     "Message",
-    "LeaveConversation",
-    "JoinConversation",
+    "RequestLeaveConversation",
+    "RequestJoinConversation",
     "Conversation",
 ]

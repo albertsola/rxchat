@@ -5,13 +5,31 @@ import reflex as rx
 from datetime import datetime
 
 
-class JoinConversation(rx.Model):
-    event: Literal["conversation.join"] = "conversation.join"
+class RequestJoinConversation(rx.Model):
+    event: Literal["request.conversation.join"] = "request.conversation.join"
     conversation_id: str
 
 
-class LeaveConversation(rx.Model):
-    event: Literal["conversation.leave"] = "conversation.leave"
+class ResponseJoinConversation(rx.Model):
+    event: Literal["response.conversation.join"] = "response.conversation.join"
+    conversation_id: str
+    users: list[str]
+
+
+class RequestLeaveConversation(rx.Model):
+    event: Literal["request.conversation.leave"] = "request.conversation.leave"
+    conversation_id: str
+
+
+class EventUserJoinConversation(rx.Model):
+    event: Literal["event.conversation.join"] = "event.conversation.join"
+    username: str
+    conversation_id: str
+
+
+class EventUserLeaveConversation(rx.Model):
+    event: Literal["event.conversation.leave"] = "event.conversation.leave"
+    username: str
     conversation_id: str
 
 
@@ -49,6 +67,6 @@ class Conversation(rx.Model):
         )
 
 
-ClientMessage = Union[JoinConversation, LeaveConversation, Message]
+ClientMessage = Union[RequestJoinConversation, RequestLeaveConversation, Message]
 
-ServerMessage = Union[Message]
+ServerMessage = Union[Message, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation]

@@ -3,7 +3,7 @@ import asyncio
 import reflex as rx
 
 from reflex_rxchat.client import WebSocketChatClient
-from reflex_rxchat.server import Message
+from reflex_rxchat.server import ServerMessage
 
 from reflex_rxchat.client import ChatRestClient
 
@@ -18,18 +18,21 @@ class ChatState(rx.State):
     conversations_data: dict[str, dict] = {}
     conversations: list[str] = ["Welcome"]
 
-    messages: list[Message] = []
+    messages: list[ServerMessage] = []
     conversation_id: str = "Welcome"
-    conversation_user_count: int = 0
     content: str = ""
     username: str = ""
+    conversation_users: list[str] = []
     processing: bool = False
+
+    @rx.var(cache=True)
+    def conversation_user_count(self) -> int:
+        return len(self.conversation_users)
 
     @rx.event(background=True)
     async def connect(self):
 
         try:
-
             async with self:
                 if self.username.__len__() < 5:
                     yield rx.toast.error(
@@ -42,10 +45,21 @@ class ChatState(rx.State):
             async with self:
                 self.connected = True
             async for m in ws_chat.receive():
+                print(m)
                 async with self:
+                    self.messages.append(m)
                     if m.event == "conversation.message":
                         yield rx.toast(m.content)
-                    self.messages.append(m)
+                    elif m.event == "response.conversation.join":
+                        self.conversation_users = m.users
+                        self.conversation_id = m.conversation_id
+                    elif m.event == "event.conversation.join":
+                        if m.username not in self.conversation_users:
+                            self.conversation_users.append(m.username)
+                    elif m.event == "event.conversation.leave":
+                        self.conversation_users.remove(m.username)
+                    else:
+                        pass
         except Exception as ex:
             print(f"Exception chat client {ex}")
             async with self:

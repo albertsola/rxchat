@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflex-rxchat"
-version = "0.2.3"
+version = "0.2.3beta"
 description = "Local chat for Reflex applications"
 readme = "README.md"
 license = { text = "Apache-2.0" }
