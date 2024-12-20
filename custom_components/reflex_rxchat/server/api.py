@@ -46,8 +46,6 @@ async def leave_conversation(username: str, conversation_id: str):
 @router.put("/conversation/{conversation_id}/message")
 async def message(username: str, conversation_id: str, content: str):
     message = Message(
-        username=username,
-        conversation_id=conversation_id,
-        content=content
+        username=username, conversation_id=conversation_id, content=content
     )
     await chat_server.send_message(message)

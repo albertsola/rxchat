@@ -6,7 +6,7 @@ from reflex_rxchat.server import Message
 from reflex_rxchat.client import ChatRestClient
 
 CHAT_ENDPOINT = "http://localhost:8000"
-chat : ChatRestClient = ChatRestClient(CHAT_ENDPOINT)
+chat: ChatRestClient = ChatRestClient(CHAT_ENDPOINT)
 
 
 class ChatState(rx.State):
@@ -67,7 +67,7 @@ class ChatState(rx.State):
 
     @rx.event
     async def leave_conversation(self, conversation_id: str):
-        await chat.leave_conversation(conversation_id)
+        await chat.leave_conversation(self.username, conversation_id)
         await self.update_conversations(self.conversation_id)
 
     @rx.event

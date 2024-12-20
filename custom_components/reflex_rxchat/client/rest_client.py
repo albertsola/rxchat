@@ -1,6 +1,7 @@
 import aiohttp
 from typing import List, Dict
 
+
 class ChatRestClient:
     def __init__(self, base_url: str):
         """Initializes the client with the base URL of the API."""
@@ -18,7 +19,7 @@ class ChatRestClient:
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.base_url}/conversation/{conversation_id}/join",
-                params={"username": username}
+                params={"username": username},
             ) as response:
                 response.raise_for_status()
 
@@ -27,7 +28,7 @@ class ChatRestClient:
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.base_url}/conversation/{conversation_id}/leave",
-                params={"username": username}
+                params={"username": username},
             ) as response:
                 response.raise_for_status()
 
@@ -36,6 +37,6 @@ class ChatRestClient:
         async with aiohttp.ClientSession() as session:
             async with session.put(
                 f"{self.base_url}/conversation/{conversation_id}/message",
-                params={"username": username, "content": content}
+                params={"username": username, "content": content},
             ) as response:
                 response.raise_for_status()

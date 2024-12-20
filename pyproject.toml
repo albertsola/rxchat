@@ -89,10 +89,6 @@ exclude = '''
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "tests",
-    "integration",
-]
 
 [tool.flake8]
 max-line-length = 105
