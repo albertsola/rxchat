@@ -12,8 +12,8 @@ from .events import (
     Message,
     RequestLeaveConversation,
     RequestJoinConversation,
-    Conversation,
 )
+from .models import Conversation
 
 __all__ = [
     "ChatServer",
@@ -22,5 +22,4 @@ __all__ = [
     "Message",
     "RequestLeaveConversation",
     "RequestJoinConversation",
-    "Conversation",
 ]

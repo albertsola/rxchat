@@ -38,13 +38,13 @@ async def connect_chat(websocket: WebSocket):
 
 @router.get("/conversation/{conversation_id}")
 async def get_conversation_id(conversation_id: str) -> dict:
-    return chat_server.conversations[conversation_id].tail(10).dict()
+    return chat_server.get_conversations()[conversation_id].tail(10).dict()
 
 
 @router.get("/conversations", response_model=List[dict])
 async def get_conversations():
     response = []
-    conversations = chat_server.get_converstations()
+    conversations = chat_server.get_conversations()
     for conversation in conversations.values():
         response.append(
             {"id": conversation.id, "users_count": conversation.user_count()}

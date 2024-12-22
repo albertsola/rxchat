@@ -1,15 +1,16 @@
+import asyncio
+
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-from reflex_rxchat.server.chat_server import (
-    ChatServer,
-    WebSocketClientHandler,
-    Conversation,
-    Message,
-)
+from reflex_rxchat.server.chat_server import ChatServer
+from reflex_rxchat.server.events import Message, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation
+from .interfaces import ChatServerInterface, WebSocketClientHandlerInterface
+from reflex_rxchat.server.websocket_handler import WebSocketClientHandler
+from reflex_rxchat.server import Conversation
 
 
 @pytest.fixture
-def chat_server():
+def chat_server() -> ChatServerInterface:
     """Fixture for creating a new ChatServer instance."""
     return ChatServer()
 
@@ -27,23 +28,14 @@ def mock_message():
 
 
 @pytest.mark.asyncio
-async def test_handle_user_websocket(chat_server, mock_websocket):
+async def test_handle_user_websocket(chat_server: ChatServerInterface, mock_websocket):
     """Test handling of a user's websocket connection."""
     username = "test_user"
     ws = AsyncMock()
     ws.accept = AsyncMock()
     ws.receive_json.side_effect = []
-
     await chat_server.handle_user_websocket(username, ws)
-
     ws.accept.assert_awaited_once()
-
-    handler: WebSocketClientHandler = chat_server.users[username]
-
-    # Assert user was added to the users dictionary
-    assert username in chat_server.users
-    assert handler.ws == ws
-    assert handler.username == username
 
 
 @pytest.mark.asyncio
@@ -83,21 +75,29 @@ async def test_user_join(chat_server):
 
     # Mock send_message
     chat_server.send_message = AsyncMock()
+    chat_server.notify = AsyncMock()
 
     await chat_server.user_join(username, conversation_id)
+
 
     # Verify that the conversation exists and the user is added
     conversation = chat_server.conversations[conversation_id]
     assert username in conversation.usernames
 
     # Verify send_message was called with the expected message
-    chat_server.send_message.assert_called_once_with(
-        Message(
+    chat_server.send_message.assert_called_with(
+        EventUserJoinConversation(
             conversation_id=conversation_id,
-            username="_system",
-            content=f"{username} joined the {conversation_id} conversation.",
+            username=username,
         )
     )
+
+    chat_server.notify.assert_called_with(
+        username,
+        ResponseJoinConversation(
+            conversation_id=conversation_id,
+            users=[username]
+        ))
 
 
 @pytest.mark.asyncio

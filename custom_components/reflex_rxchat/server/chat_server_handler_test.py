@@ -1,25 +1,25 @@
 import pytest
 import asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
-from reflex_rxchat.server.chat_server import WebSocketClientHandler
+from reflex_rxchat.server.websocket_handler import WebSocketClientHandler
 from reflex_rxchat.server.events import Message
+from starlette.websockets import WebSocketState
 
 
 @pytest.mark.asyncio
 async def test_handler_accepts_websocket_and_closes_on_cancel():
     # Mock websocket and chat_state
     ws = AsyncMock()
+    ws.state = WebSocketState.CONNECTED
     chat_state = AsyncMock()
+    handler = WebSocketClientHandler(ws, username="testuser")
+    chat_state.get_users = MagicMock(return_value={"testuser": handler})
 
     # Make ws.receive_json() raise asyncio.CancelledError after first call
     ws.receive_json.side_effect = asyncio.CancelledError
-
-    handler = WebSocketClientHandler(ws, username="testuser")
-
     # Run the handler and ensure it handles cancellation
     await handler(chat_state)
-
     ws.receive_json.assert_awaited_once()
     ws.accept.assert_awaited_once()
     ws.close.assert_awaited_once()
@@ -28,20 +28,23 @@ async def test_handler_accepts_websocket_and_closes_on_cancel():
 @pytest.mark.asyncio
 async def test_handler_conversation_message():
     ws = AsyncMock()
+    ws.state = WebSocketState.CONNECTED
     chat_state = AsyncMock()
+    handler = WebSocketClientHandler(ws, username="alice")
+    chat_state.get_users = MagicMock(return_value={"alice": handler})
 
     # Simulate receiving a "conversation.message" event once, then stop
     ws.receive_json.side_effect = [
         {
             "event": "conversation.message",
             "conversation_id": 123,
-            "username": "test user",
+            "username": "alice",
             "content": "Hello",
         },
         asyncio.CancelledError,
     ]
 
-    handler = WebSocketClientHandler(ws, username="alice")
+
     await handler(chat_state)
 
     # Ensure ws was accepted
@@ -56,24 +59,32 @@ async def test_handler_conversation_message():
 
 
 @pytest.mark.asyncio
-async def test_handler_unknown_message():
+async def test_handler_unknown_event():
     ws = AsyncMock()
+    ws.state = WebSocketState.CONNECTED
     chat_state = AsyncMock()
+    chat_state.get_users = MagicMock(return_value={})
 
     # Simulate an unknown event
     ws.receive_json.side_effect = [{"event": "unknown.event"}, asyncio.CancelledError]
-
     handler = WebSocketClientHandler(ws, username="david")
-
-    # Since the handler should raise a RuntimeError for unknown event,
-    # but we catch it inside __call__, let's just see what happens.
-    # Actually, your code raises RuntimeError, so let's confirm that.
     with pytest.raises(RuntimeError) as exc_info:
         await handler(chat_state)
     assert "Server received unknown message" in str(exc_info.value)
 
-    # The ws is not necessarily closed here because the RuntimeError breaks out
-    # But the test ensures the code raises the right exception.
+@pytest.mark.asyncio
+async def test_handler_unknown_message():
+    ws = AsyncMock()
+    ws.state = WebSocketState.CONNECTED
+    chat_state = AsyncMock()
+    chat_state.get_users = MagicMock(return_value={})
+
+    # Simulate an unknown event
+    ws.receive_json.side_effect = ["asdasdfasfsd", asyncio.CancelledError]
+    handler = WebSocketClientHandler(ws, username="david")
+    with pytest.raises(RuntimeError) as exc_info:
+        await handler(chat_state)
+    assert "Server received malformed message. " in str(exc_info.value)
 
 
 @pytest.mark.asyncio
