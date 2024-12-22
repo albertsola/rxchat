@@ -71,7 +71,7 @@ async def test_handle_user_disconnected(chat_server):
 
 
 @pytest.mark.asyncio
-async def test_user_join_and_leave(chat_server):
+async def test_user_join(chat_server):
     """Test a user joining a conversation."""
     username = "test_user"
     conversation_id = "test_conversation"
@@ -100,7 +100,6 @@ async def test_user_join_and_leave(chat_server):
     )
 
     chat_server.send_message.assert_called_with(
-        conversation_id,
         EventUserJoinConversation(conversation_id=conversation_id, username=username),
     )
 
