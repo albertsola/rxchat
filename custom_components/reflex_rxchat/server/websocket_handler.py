@@ -49,7 +49,7 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
     async def receive(self) -> AsyncGenerator[ServerMessage, None]:  # type: ignore
         try:
             while True:
-                data = self.ws.receive_json()
+                data = await self.ws.receive_json()
                 if not isinstance(data, dict):
                     raise RuntimeError(
                         f"Server received malformed message. payload={data}"
