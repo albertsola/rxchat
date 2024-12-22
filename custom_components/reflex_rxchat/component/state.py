@@ -7,7 +7,7 @@ from reflex_rxchat.server import ServerMessage
 
 from reflex_rxchat.client import ChatRestClient
 
-CHAT_ENDPOINT:str = "http://localhost:8000"
+CHAT_ENDPOINT: str = "http://localhost:8000"
 chat: ChatRestClient = ChatRestClient(CHAT_ENDPOINT)
 
 
@@ -39,7 +39,7 @@ class ChatState(rx.State):
                         "Your username has to be at least 5 characters long"
                     )
                     return
-            ws_chat: WebSocketChatClient = WebSocketChatClient(base_url=CHAT_ENDPOINT)
+            ws_chat: WebSocketChatClient = WebSocketChatClient(base_url=CHAT_ENDPOINT)  # type: ignore
             await ws_chat.connect(self.username)
             await ws_chat.join_conversation(self.conversation_id)
             async with self:

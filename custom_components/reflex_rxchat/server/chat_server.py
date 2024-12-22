@@ -9,7 +9,7 @@ from reflex_rxchat.server.events import (
     ServerMessage,
     EventUserLeaveConversation,
     EventUserJoinConversation,
-    ResponseJoinConversation
+    ResponseJoinConversation,
 )
 from typing import Optional
 
@@ -60,10 +60,12 @@ class ChatServer(ChatServerInterface):
         if username in conversation.usernames:
             return
         conversation.usernames.append(username)
-        await self.notify(username, ResponseJoinConversation(
-            conversation_id=conversation_id,
-            users=conversation.usernames
-        ))
+        await self.notify(
+            username,
+            ResponseJoinConversation(
+                conversation_id=conversation_id, users=conversation.usernames
+            ),
+        )
         await self.send_message(
             EventUserJoinConversation(
                 conversation_id=conversation_id,
@@ -78,10 +80,11 @@ class ChatServer(ChatServerInterface):
         conversation: Conversation = self.conversations[conversation_id]
         if username not in conversation.usernames:
             return
-        await self.send_message(EventUserLeaveConversation(
-            conversation_id=conversation_id,
-            username=username
-        ))
+        await self.send_message(
+            EventUserLeaveConversation(
+                conversation_id=conversation_id, username=username
+            )
+        )
         conversation.usernames.remove(username)
 
     async def send_message(self, message: ServerMessage) -> None:
@@ -97,7 +100,9 @@ class ChatServer(ChatServerInterface):
 
     async def notify(self, username: str, message: ServerMessage) -> None:
         if username not in self.users:
-            logger.warning(f"Unable to notify {username} message={message} as it is not in users")
+            logger.warning(
+                f"Unable to notify {username} message={message} as it is not in users"
+            )
             return
         await self.users[username].send(message)
 

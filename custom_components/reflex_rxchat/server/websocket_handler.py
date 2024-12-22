@@ -2,7 +2,12 @@ import asyncio
 from typing import AsyncGenerator
 from . import logger
 from .interfaces import WebSocketClientHandlerInterface, ChatServerInterface
-from .events import ServerMessage, Message, RequestJoinConversation, RequestLeaveConversation
+from .events import (
+    ServerMessage,
+    Message,
+    RequestJoinConversation,
+    RequestLeaveConversation,
+)
 
 from starlette.websockets import WebSocket, WebSocketState, WebSocketDisconnect
 
@@ -32,9 +37,7 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
-        except WebSocketDisconnect as ex:
-            pass
-        except (asyncio.CancelledError, StopAsyncIteration, StopAsyncIteration):
+        except (WebSocketDisconnect, asyncio.CancelledError, StopAsyncIteration, StopAsyncIteration):
             pass
         finally:
             logger.info(f" - {self.username} disconnected")
@@ -43,10 +46,10 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
                 del users[self.username]
             await self.close()
 
-    async def receive(self) -> AsyncGenerator[ServerMessage, None]:
+    async def receive(self) -> AsyncGenerator[ServerMessage, None]:  # type: ignore
         try:
             while True:
-                data = await self.ws.receive_json()
+                data = self.ws.receive_json()
                 if not isinstance(data, dict):
                     raise RuntimeError(
                         f"Server received malformed message. payload={data}"

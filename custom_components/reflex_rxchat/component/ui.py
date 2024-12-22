@@ -1,5 +1,11 @@
 import reflex as rx
-from reflex_rxchat.server.events import ServerMessage, Message, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation
+from reflex_rxchat.server.events import (
+    ServerMessage,
+    Message,
+    EventUserJoinConversation,
+    EventUserLeaveConversation,
+    ResponseJoinConversation,
+)
 from .state import ChatState
 
 
@@ -47,10 +53,7 @@ def render_event_conversation_join(event: EventUserJoinConversation) -> rx.Compo
     return rx.hstack(
         rx.icon("log-in"),
         rx.card(
-            rx.text(
-                rx.text.strong(event.username),
-                " join the conversation"
-            ),
+            rx.text(rx.text.strong(event.username), " join the conversation"),
             align="center",
             width="100%",
         ),
@@ -58,14 +61,11 @@ def render_event_conversation_join(event: EventUserJoinConversation) -> rx.Compo
     )
 
 
-def render_event_conversation_leave(event: EventUserJoinConversation) -> rx.Component:
+def render_event_conversation_leave(event: EventUserLeaveConversation) -> rx.Component:
     return rx.hstack(
         rx.icon("log-out"),
         rx.card(
-            rx.text(
-                rx.text.strong(event.username),
-                " left the conversation"
-            ),
+            rx.text(rx.text.strong(event.username), " left the conversation"),
             align="center",
             width="100%",
         ),
@@ -77,7 +77,9 @@ def render_username(username: str) -> rx.Component:
     return rx.badge(rx.icon("user"), rx.text(username))
 
 
-def render_event_response_conversation_join(event: ResponseJoinConversation) -> rx.Component:
+def render_event_response_conversation_join(
+    event: ResponseJoinConversation,
+) -> rx.Component:
     return rx.hstack(
         rx.card(
             rx.text.strong(f"You joined {event.conversation_id} conversation"),
@@ -89,12 +91,11 @@ def render_event_response_conversation_join(event: ResponseJoinConversation) -> 
 def message_render(event: ServerMessage) -> rx.Component:
     return rx.match(
         event.event,
-
-            ("conversation.message", render_conversation_message(event)),
-            ("event.conversation.join", render_event_conversation_join(event)),
-            ("event.conversation.leave", render_event_conversation_join(event)),
-            ("response.conversation.join", render_event_response_conversation_join(event)),
-            rx.card(rx.text(event.event)),
+        ("conversation.message", render_conversation_message(event)),
+        ("event.conversation.join", render_event_conversation_join(event)),
+        ("event.conversation.leave", render_event_conversation_leave(event)),
+        ("response.conversation.join", render_event_response_conversation_join(event)),
+        rx.card(rx.text(event.event)),
     )
 
 
@@ -195,6 +196,7 @@ def users():
         ),
         background_color=rx.color("mauve", 2),
     )
+
 
 def chat() -> rx.Component:
     return rx.box(

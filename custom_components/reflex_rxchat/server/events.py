@@ -43,4 +43,9 @@ class Message(rx.Model):
 
 ClientMessage = Union[RequestJoinConversation, RequestLeaveConversation, Message]
 
-ServerMessage = Union[Message, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation]
+ServerMessage = Union[
+    Message,
+    EventUserJoinConversation,
+    EventUserLeaveConversation,
+    ResponseJoinConversation,
+]

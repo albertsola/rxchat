@@ -23,7 +23,7 @@ async def lifespan_chat_server(app: FastAPI):
     logger.info("ChatServer closed")
 
 
-chat_server:ChatServer = None # type:ignore[assignment]
+chat_server: ChatServer = None  # type:ignore[assignment]
 router = APIRouter(lifespan=lifespan_chat_server)
 
 

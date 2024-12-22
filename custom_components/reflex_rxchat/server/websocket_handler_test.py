@@ -44,7 +44,6 @@ async def test_handler_conversation_message():
         asyncio.CancelledError,
     ]
 
-
     await handler(chat_state)
 
     # Ensure ws was accepted
@@ -71,6 +70,7 @@ async def test_handler_unknown_event():
     with pytest.raises(RuntimeError) as exc_info:
         await handler(chat_state)
     assert "Server received unknown message" in str(exc_info.value)
+
 
 @pytest.mark.asyncio
 async def test_handler_unknown_message():

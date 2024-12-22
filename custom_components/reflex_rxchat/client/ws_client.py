@@ -9,15 +9,20 @@ from reflex_rxchat.server import (
     ClientMessage,
     Message,
     RequestLeaveConversation,
-    RequestJoinConversation
+    RequestJoinConversation,
 )
-from reflex_rxchat.server.events import ServerMessage, EventUserJoinConversation, EventUserLeaveConversation, ResponseJoinConversation
+from reflex_rxchat.server.events import (
+    ServerMessage,
+    EventUserJoinConversation,
+    EventUserLeaveConversation,
+    ResponseJoinConversation,
+)
 
 
 class WebSocketChatClient:
-    def __init__(self, base_url: str, username: str = ""):
+    def __init__(self, base_url: str) -> None:
         self.base_url: str = base_url
-        self._session = ClientSession(base_url=base_url)
+        self._session: ClientSession = ClientSession(base_url=base_url)
         self.ws: Optional[ClientWebSocketResponse] = None
         self.username: Optional[str] = None
 
