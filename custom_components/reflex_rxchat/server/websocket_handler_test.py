@@ -3,7 +3,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 from reflex_rxchat.server.websocket_handler import WebSocketClientHandler
-from reflex_rxchat.server.events import Message
+from reflex_rxchat.server.events import EventType, Message
 from starlette.websockets import WebSocketState
 
 
@@ -33,10 +33,10 @@ async def test_handler_conversation_message():
     handler = WebSocketClientHandler(ws, username="alice")
     chat_state.get_users = MagicMock(return_value={"alice": handler})
 
-    # Simulate receiving a "conversation.message" event once, then stop
+    # Simulate receiving a EventType.CONVERSATION_MESSAGE event once, then stop
     ws.receive_json.side_effect = [
         {
-            "event": "conversation.message",
+            "event": EventType.CONVERSATION_MESSAGE,
             "conversation_id": 123,
             "username": "alice",
             "content": "Hello",
@@ -53,7 +53,34 @@ async def test_handler_conversation_message():
     assert chat_state.send_message.await_count == 1
     sent_msg = chat_state.send_message.await_args[0][0]
     assert sent_msg.username == "alice"
-    assert sent_msg.event == "conversation.message"
+    assert sent_msg.event == EventType.CONVERSATION_MESSAGE
+    ws.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_handler_join_and_leave_requests():
+    ws = AsyncMock()
+    ws.state = WebSocketState.CONNECTED
+    chat_state = AsyncMock()
+    handler = WebSocketClientHandler(ws, username="alice")
+    chat_state.get_users = MagicMock(return_value={"alice": handler})
+
+    # Simulate receiving a EventType.CONVERSATION_MESSAGE event once, then stop
+    ws.receive_json.side_effect = [
+        {
+            "event": EventType.REQUEST_CONVERSATION_JOIN,
+            "conversation_id": 123,
+        },
+        {
+            "event": EventType.REQUEST_CONVERSATION_LEAVE,
+            "conversation_id": 123,
+        },
+    ]
+
+    await handler(chat_state)
+
+    # Ensure ws was accepted
+    ws.accept.assert_awaited_once()
     ws.close.assert_awaited_once()
 
 
@@ -107,13 +134,13 @@ async def test_receive_method():
     # Simulate two messages, then raise CancelledError to break out of loop
     ws.receive_json.side_effect = [
         {
-            "event": "conversation.message",
+            "event": EventType.CONVERSATION_MESSAGE,
             "conversation_id": 123,
             "username": "test user",
             "content": "Hello",
         },
         {
-            "event": "conversation.message",
+            "event": EventType.CONVERSATION_MESSAGE,
             "conversation_id": 123,
             "username": "test user",
             "content": "world",
@@ -132,5 +159,5 @@ async def test_receive_method():
 
     # Check that we got our two messages
     assert len(messages) == 2
-    assert messages[0].event == "conversation.message"
-    assert messages[1].event == "conversation.message"
+    assert messages[0].event == EventType.CONVERSATION_MESSAGE
+    assert messages[1].event == EventType.CONVERSATION_MESSAGE

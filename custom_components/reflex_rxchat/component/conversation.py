@@ -1,5 +1,6 @@
 import reflex as rx
 from reflex_rxchat.server.events import (
+    EventType,
     Message,
     EventUserJoinConversation,
     EventUserLeaveConversation,
@@ -95,10 +96,10 @@ class ConversationMessagesComponent(Component):
     def event(cls, event: ServerMessage, *args) -> Component:
         return rx.match(
             event.event,
-            ("conversation.message", cls.message(event)),
-            ("event.conversation.join", cls.join(event)),
-            ("event.conversation.leave", cls.leave(event)),
-            ("response.conversation.join", cls.join_response(event)),
+            (EventType.CONVERSATION_MESSAGE, cls.message(event)),
+            (EventType.EVENT_CONVERSATION_JOIN, cls.join(event)),
+            (EventType.EVENT_CONVERSATION_LEAVE, cls.leave(event)),
+            (EventType.RESPONSE_CONVERSATION_JOIN, cls.join_response(event)),
             (rx.text(f"Unknown event type {event.event}")),
         )
 

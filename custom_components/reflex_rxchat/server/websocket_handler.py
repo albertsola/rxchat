@@ -3,6 +3,7 @@ from typing import AsyncGenerator
 from . import logger
 from .interfaces import WebSocketClientHandlerInterface, ChatServerInterface
 from .events import (
+    EventType,
     ServerMessage,
     Message,
     RequestJoinConversation,
@@ -25,15 +26,15 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
             await self.ws.accept()
             logger.info(f" - {self.username} connected")
             async for message in self.receive():
-                if message.event == "conversation.message":
+                if message.event == EventType.CONVERSATION_MESSAGE:
                     message.username = self.username
                     try:
                         await chat_state.send_message(message)
                     finally:
                         pass
-                elif message.event == "request.conversation.join":
+                elif message.event == EventType.REQUEST_CONVERSATION_JOIN:
                     await chat_state.user_join(self.username, message.conversation_id)
-                elif message.event == "request.conversation.leave":
+                elif message.event == EventType.REQUEST_CONVERSATION_LEAVE:
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
@@ -61,11 +62,11 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
                     )
 
                 match (data.get("event", None)):
-                    case "conversation.message":
+                    case EventType.CONVERSATION_MESSAGE:
                         yield Message(**data)
-                    case "request.conversation.join":
+                    case EventType.REQUEST_CONVERSATION_JOIN:
                         yield RequestJoinConversation(**data)
-                    case "request.conversation.leave":
+                    case EventType.REQUEST_CONVERSATION_LEAVE:
                         yield RequestLeaveConversation(**data)
                     case _:
                         raise RuntimeError(

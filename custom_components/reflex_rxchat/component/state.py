@@ -3,7 +3,7 @@ import asyncio
 import reflex as rx
 
 from reflex_rxchat.client import WebSocketChatClient
-from reflex_rxchat.server import ServerMessage
+from reflex_rxchat.server import ServerMessage, EventType
 
 from reflex_rxchat.client import ChatRestClient
 
@@ -48,15 +48,15 @@ class ChatState(rx.State):
                 print(m)
                 async with self:
                     self.messages.append(m)
-                    if m.event == "conversation.message":
+                    if m.event == EventType.CONVERSATION_MESSAGE:
                         yield rx.toast(m.content)
-                    elif m.event == "response.conversation.join":
+                    elif m.event == EventType.RESPONSE_CONVERSATION_JOIN:
                         self.conversation_users = m.users
                         self.conversation_id = m.conversation_id
-                    elif m.event == "event.conversation.join":
+                    elif m.event == EventType.EVENT_CONVERSATION_JOIN:
                         if m.username not in self.conversation_users:
                             self.conversation_users.append(m.username)
-                    elif m.event == "event.conversation.leave":
+                    elif m.event == EventType.EVENT_CONVERSATION_LEAVE:
                         self.conversation_users.remove(m.username)
                     else:
                         pass

@@ -12,6 +12,7 @@ from reflex_rxchat.server import (
     RequestJoinConversation,
 )
 from reflex_rxchat.server.events import (
+    EventType,
     ServerMessage,
     EventUserJoinConversation,
     EventUserLeaveConversation,
@@ -47,15 +48,15 @@ class WebSocketChatClient:
                 return
 
             match (data.get("event", None)):
-                case "conversation.message":
+                case EventType.CONVERSATION_MESSAGE:
                     yield Message(**data)
 
-                case "response.conversation.join":
+                case EventType.RESPONSE_CONVERSATION_JOIN:
                     yield ResponseJoinConversation(**data)
 
-                case "event.conversation.join":
+                case EventType.EVENT_CONVERSATION_JOIN:
                     yield EventUserJoinConversation(**data)
-                case "event.conversation.leave":
+                case EventType.EVENT_CONVERSATION_LEAVE:
                     yield EventUserLeaveConversation(**data)
                 case _:
                     raise RuntimeError(
