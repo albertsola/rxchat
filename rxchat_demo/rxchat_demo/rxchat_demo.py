@@ -9,8 +9,6 @@ filename = f"{config.app_name}/{config.app_name}.py"
 
 def index() -> rx.Component:
     from reflex_rxchat import conversation
-
-    # Welcome Page (Index)
     return rx.container(
         rx.color_mode.button(position="top-right"),
         conversation(),
