@@ -37,7 +37,12 @@ class WebSocketClientHandler(WebSocketClientHandlerInterface):
                     await chat_state.user_leave(self.username, message.conversation_id)
                 else:
                     raise RuntimeError(f"Unknown message type {message.event}")
-        except (WebSocketDisconnect, asyncio.CancelledError, StopAsyncIteration, StopAsyncIteration):
+        except (
+            WebSocketDisconnect,
+            asyncio.CancelledError,
+            StopAsyncIteration,
+            StopAsyncIteration,
+        ):
             pass
         finally:
             logger.info(f" - {self.username} disconnected")

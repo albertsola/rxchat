@@ -25,8 +25,18 @@ async def test_connect_success(client: WebSocketChatClient):
 async def test_receive_message(client: WebSocketChatClient):
     client.ws.receive_json = AsyncMock(
         side_effect=[
-            {"conversation_id": "conv1", "username": "test", "content": "Hello", "event": "conversation.message"},
-            {"conversation_id": "conv2", "username": "test", "content": "World", "event": "conversation.message"},
+            {
+                "conversation_id": "conv1",
+                "username": "test",
+                "content": "Hello",
+                "event": "conversation.message",
+            },
+            {
+                "conversation_id": "conv2",
+                "username": "test",
+                "content": "World",
+                "event": "conversation.message",
+            },
         ]
     )
 
