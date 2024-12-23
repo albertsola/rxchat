@@ -1,3 +1,3 @@
-from reflex_rxchat.component import chat
+from reflex_rxchat.component import conversation
 
-__all__ = ["chat"]
+__all__ = ["conversation"]
