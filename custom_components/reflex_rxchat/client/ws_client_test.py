@@ -1,7 +1,7 @@
 # type: ignore
 import pytest
 from unittest.mock import AsyncMock
-from reflex_rxchat.server.events import Message
+from reflex_rxchat.server.events import EventType, Message
 
 from .ws_client import WebSocketChatClient
 
@@ -25,8 +25,18 @@ async def test_connect_success(client: WebSocketChatClient):
 async def test_receive_message(client: WebSocketChatClient):
     client.ws.receive_json = AsyncMock(
         side_effect=[
-            {"conversation_id": "conv1", "username": "test", "content": "Hello"},
-            {"conversation_id": "conv2", "username": "test", "content": "World"},
+            {
+                "conversation_id": "conv1",
+                "username": "test",
+                "content": "Hello",
+                "event": EventType.CONVERSATION_MESSAGE,
+            },
+            {
+                "conversation_id": "conv2",
+                "username": "test",
+                "content": "World",
+                "event": EventType.CONVERSATION_MESSAGE,
+            },
         ]
     )
 

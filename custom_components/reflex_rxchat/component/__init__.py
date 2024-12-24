@@ -1,3 +1,3 @@
-from .ui import chat
+from .conversation import conversation
 
-__all__ = ["chat"]
+__all__ = ["conversation"]

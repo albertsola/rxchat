@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflex-rxchat"
-version = "0.2.3"
+version = "0.2.4"
 description = "Local chat for Reflex applications"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -37,7 +37,7 @@ where = ["custom_components"]
 
 [tool.poetry]
 name = "reflex-rxchat"
-version = "0.2.2"
+version = "0.2.3"
 description = "Drop in self hosted chat for reflex.dev"
 authors = ["Albert Sola <albert.sola@gmail.com>"]
 license = "GPL"

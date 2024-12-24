@@ -1,11 +1,13 @@
+import asyncio
+
 import reflex as rx
 
 from reflex_rxchat.client import WebSocketChatClient
-from reflex_rxchat.server import Message
+from reflex_rxchat.server import ServerMessage, EventType
 
 from reflex_rxchat.client import ChatRestClient
 
-CHAT_ENDPOINT = "http://localhost:8000"
+CHAT_ENDPOINT: str = "http://localhost:8000"
 chat: ChatRestClient = ChatRestClient(CHAT_ENDPOINT)
 
 
@@ -16,15 +18,20 @@ class ChatState(rx.State):
     conversations_data: dict[str, dict] = {}
     conversations: list[str] = ["Welcome"]
 
-    messages: list[Message] = []
+    messages: list[ServerMessage] = []
     conversation_id: str = "Welcome"
-    conversation_user_count: int = 0
     content: str = ""
     username: str = ""
+    conversation_users: list[str] = []
     processing: bool = False
+
+    @rx.var(cache=True)
+    def conversation_user_count(self) -> int:
+        return len(self.conversation_users)
 
     @rx.event(background=True)
     async def connect(self):
+
         try:
             async with self:
                 if self.username.__len__() < 5:
@@ -32,16 +39,27 @@ class ChatState(rx.State):
                         "Your username has to be at least 5 characters long"
                     )
                     return
-
+            ws_chat: WebSocketChatClient = WebSocketChatClient(base_url=CHAT_ENDPOINT)  # type: ignore
+            await ws_chat.connect(self.username)
+            await ws_chat.join_conversation(self.conversation_id)
             async with self:
-                print("Initializing chat client")
-                chat = WebSocketChatClient(base_url=CHAT_ENDPOINT)
-                await chat.connect(self.username)
-                await chat.join_conversation(self.conversation_id)
                 self.connected = True
-            async for m in chat.receive():
+            async for m in ws_chat.receive():
+                print(m)
                 async with self:
                     self.messages.append(m)
+                    if m.event == EventType.CONVERSATION_MESSAGE:
+                        yield rx.toast(m.content)
+                    elif m.event == EventType.RESPONSE_CONVERSATION_JOIN:
+                        self.conversation_users = m.users
+                        self.conversation_id = m.conversation_id
+                    elif m.event == EventType.EVENT_CONVERSATION_JOIN:
+                        if m.username not in self.conversation_users:
+                            self.conversation_users.append(m.username)
+                    elif m.event == EventType.EVENT_CONVERSATION_LEAVE:
+                        self.conversation_users.remove(m.username)
+                    else:
+                        pass
         except Exception as ex:
             print(f"Exception chat client {ex}")
             async with self:
@@ -49,10 +67,13 @@ class ChatState(rx.State):
             raise ex
 
         finally:
+            await asyncio.sleep(3)
             print("Chat client finalizing")
             async with self:
                 self.connected = False
                 self.messages = []
+            if ws_chat is not None:
+                await ws_chat.disconnect()
 
     @rx.event
     async def change_conversation(self, conversation_id: str):

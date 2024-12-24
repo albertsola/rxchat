@@ -12,48 +12,62 @@ Reflex Chat (rxchat) is a versatile and efficient chat interface designed to sea
 - **Customizable**: Modify and extend the chat interface to suit your specific needs.
 - **Real-Time Communication**: Support for real-time messaging using WebSockets.
 
-## Getting Started
+## Installation
 
-### Prerequisites
-
-Ensure you have the following installed:
-- Python 3.13
-- poetry
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/albertsola/rxchat.git
-   cd rxchat
-   ```
-
-2. Install Python dependencies:
-   ```bash
-   poetry install
-   poetry run reflex init
-   ```
-3. Run the project:
-   ```bash
-   poetry run reflex run
-   ```
-
-5. Project running:
-   App running at: http://localhost:3000
-   Backend running at: http://0.0.0.0:8000/api/docs
-
-
-### Testing
-
+```bash
+pip install reflex_rxchat
 ```
-poetry run tox # Checks everything
 
-poetry run flake8
+## Register ChatServer with FastAPI
 
-poetry run mypy
+```python
+import reflex as rx
+from reflex_rxchat.server.api import router
 
-poetry run pytest --cov
-
-poetry run black [file or a folder]
-
+app = rx.App()
+# Add your other configurations here
+app.api.include_router(router)
 ```
+
+## Add the conversation component into a page
+
+```python
+def index() -> rx.Component:
+    from reflex_rxchat import conversation
+    return rx.container(
+        rx.color_mode.button(position="top-right"),
+        conversation(),
+        rx.logo(),
+    )
+```
+
+## Demo projects
+
+```python
+# File: rxchat_demo/rxchat_demo.py
+
+from rxconfig import config
+import reflex as rx
+from reflex_rxchat.server.api import router
+
+filename = f"{config.app_name}/{config.app_name}.py"
+
+
+def index() -> rx.Component:
+    from reflex_rxchat import conversation
+    return rx.container(
+        rx.color_mode.button(position="top-right"),
+        conversation(),
+        rx.logo(),
+    )
+
+
+app = rx.App()
+app.add_page(index)
+app.api.include_router(router)
+```
+
+# Contributing
+
+Issues: [Issues](https://github.com/albertsola/rxchat/issues)
+Contributing: [CONTRIBUTING.md](https://github.com/albertsola/rxchat/blob/main/CONTRIBUTING.md)
